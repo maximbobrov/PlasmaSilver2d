@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/elast.txt</file>
+        <file>resources/excite.txt</file>
+        <file>resources/ionis.txt</file>
+        <file>resources/ionis_2.txt</file>
+    </qresource>
+</RCC>
