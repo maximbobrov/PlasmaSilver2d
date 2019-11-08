@@ -11,9 +11,9 @@ public:
     reaction(simulationData* data);// = nullptr);
     virtual void calc();
     virtual double getDe();
-    double *getR();
+    double** getR();
 protected:
-    double *m_R;
+    double** m_R;
     simulationData* m_pData;
 };
 

@@ -65,14 +65,15 @@ XYZ GLWidget::get_color(double gval, double min, double max)
 
 }
 
-void GLWidget::setField(double **iArr, int iN_X, int iN_Y, double idx, double idy)
+void GLWidget::setField(double **iArr, double **iEps, int iN_X, int iN_Y, double idx, double idy, double isc = 1.0)
 {
     arr = iArr;
+    eps = iEps;
     N_X = iN_X;
     N_Y = iN_Y;
     dx =  idx;
     dy =  idy;
-
+    sc = isc;
 }
 
 void GLWidget::paintGL()
@@ -86,12 +87,12 @@ void GLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glLoadIdentity();
-    glPushMatrix();
-
+    //glPushMatrix();
+    glScalef(4,4,4);
     glDisable(GL_FOG);
 
 
-    glPopMatrix();
+    //glPopMatrix();
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_FOG);
     //glDisable(GL_LINE_SMOOTH);
@@ -99,7 +100,7 @@ void GLWidget::paintGL()
 
     //glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 
-    glBegin(GL_TRIANGLE_STRIP);
+    /*glBegin(GL_TRIANGLE_STRIP);
     for (int i=0;i<=20;i++)
     {
         get_color(i/20.0,0.0,1.0);
@@ -107,42 +108,39 @@ void GLWidget::paintGL()
         glVertex2f(-0.75+i*1.5/20,-0.94);
         glVertex2f(-0.75+i*1.5/20,-0.98);
     }
-    glEnd();
-
-    /* glBegin(GL_TRIANGLE_STRIP);
-    for (int i=0;i<=100;i++)
-    {
-        for (int j=0;j<=100;j++)
-        {
-        get_color(i/20.0,j/20.0,1.0);
-
-        glVertex2f(-0.75+i*1.5/20,-0.75+j*1.5/2);
-        glVertex2f(-0.75+i*1.5/20,-0.75+j*1.5/2);
-        }
-    }
     glEnd();*/
 
     if(arr!=nullptr)
     {
 
         double l_2;
-        double ck = 1.0;
-        double A = 1500;
-        glClear(GL_COLOR_BUFFER_BIT);
-        glLoadIdentity();
+        double A = 500;
         glColor3f(1,1,1);
-        for (int i=0;i<N_X-1;i++)
+        for (int i=1;i<N_X-1;i++)
         {
             glBegin(GL_TRIANGLE_STRIP);
             for (int j=0;j<N_Y;j++)
             {
-                l_2=ck*(arr[i][j]/A);
+                l_2=sc*(arr[i][j]/A);
                 glColor3f(l_2,l_2,-l_2);
+
                 glVertex2f(dx*(i-N_X/2),dy*(j-N_Y/2));
 
-                l_2=ck*(arr[i+1][j]/A);
+                l_2=sc*(arr[i+1][j]/A);
                 glColor3f(l_2,l_2,-l_2);
                 glVertex2f(dx*(i+1-N_X/2),dy*(j-N_Y/2));
+            }
+            glEnd();
+            glPointSize(1);
+            glBegin(GL_POINTS);
+            glColor3f(1,1,1);
+
+            for (int j=0;j<N_Y;j++)
+            {
+                if(eps[i][j] > 1.0)
+                {
+                    glVertex2f(dx*(i-N_X/2),dy*(j-N_Y/2));
+                }
             }
             glEnd();
         }

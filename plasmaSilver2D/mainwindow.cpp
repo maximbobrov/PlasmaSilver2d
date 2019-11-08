@@ -1,3 +1,4 @@
+
 #include "mainwindow.h"
 #include "qcustomplot.h"
 #include <QGridLayout>
@@ -9,8 +10,8 @@
 
 #define NZ 400
 
-#define NX 81
-#define NY 81
+#define NX 129
+#define NY 129
 
 
 
@@ -34,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_textDeltaTime = new QLineEdit(this);
     m_textEndTime =   new QLineEdit(this);
     m_scrollBar = new QScrollBar(Qt::Horizontal,this);
+    m_scallingBar = new QScrollBar(Qt::Horizontal,this);
     m_simulateButton = new QPushButton("Simulate");
     m_debugButton = new QPushButton("plotDebug");
 
@@ -42,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
    // m_grid->addLayout(m_vLayoutCheckBoxes,0,3,1,1);
     m_grid->addWidget(m_simulateButton,6,0);
     m_grid->addWidget(m_debugButton,6,1);
+    m_grid->addWidget(m_scallingBar,6,2,1,1);
 
     m_hLayout->addWidget(new QLabel("Start time:"));
     m_hLayout->addWidget(m_textStartTime);
@@ -49,15 +52,17 @@ MainWindow::MainWindow(QWidget *parent)
     m_hLayout->addWidget(m_textDeltaTime);
     m_hLayout->addWidget(new QLabel("End time:"));
     m_hLayout->addWidget(m_textEndTime);
-    m_grid->addLayout(m_hLayout,4,0,1,2);
-    m_grid->addWidget(m_scrollBar,4,2,1,1);
+    m_grid->addLayout(m_hLayout,5,0,1,2);
+    m_grid->addWidget(m_scrollBar,5,2,1,1);
 
 
     m_data = new simulationData(NX,NY);
 
     m_data->setDx(1.0/NX);
     m_data->setDy(0.3/NY);
-     m_data->setDt(5e-12);
+    m_data->setCellsXNumber(NX);
+    m_data->setCellsYNumber(NY);
+    m_data->setDt(5e-12);
 
     m_sNe = new solverNe(m_data);
     m_sEn = new solverEnergy(m_data);
@@ -65,12 +70,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_textStartTime->setText(QString().number(0.0));
     m_textDeltaTime->setText(QString().number(m_data->getDt()));
-    m_textEndTime->setText(QString().number(1e-9));
+    m_textEndTime->setText(QString().number(1e-12));
 
+    m_scallingBar->setRange(0,500);
+    m_scallingBar->setValue(50);
 
     connect (m_simulateButton, SIGNAL(clicked(bool)), this, SLOT(simulateData(bool)));
-    /*connect (m_debugButton, SIGNAL(clicked(bool)), this, SLOT(drawDebug(bool)));
-    connect(m_scrollBar, SIGNAL(valueChanged(int)), this, SLOT(replotGraph(int)));*/
+    connect (m_debugButton, SIGNAL(clicked(bool)), this, SLOT(drawDebug(bool)));
+    connect(m_scrollBar, SIGNAL(valueChanged(int)), this, SLOT(replotGraph(int)));
+    connect(m_scallingBar, SIGNAL(valueChanged(int)), this, SLOT(replotGraph(int)));
 
     m_simulateButton->setCheckable(true);
 
@@ -88,7 +96,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::replotGraph(int number)
 {
-    glWidget->setField( m_fPhi->arr , NX, NY, m_data->getDx(), m_data->getDy());
+    simulationData::simulationParameters* pParams=m_data->getParameters();
+    glWidget->setField( m_fPhi->arr , pParams->arrEps, NX, NY, m_data->getDx(), m_data->getDy(),m_scallingBar->value()*1.0/100);
     glWidget->repaint();//
 
     /*m_maxY=-1e30;
@@ -254,22 +263,24 @@ void MainWindow::initData()
 
 void MainWindow::updateData()
 {
-    m_sPhi->solve(1);
-    /*for (int i = 0; i < 10; ++i)
+
+    for (int i = 0; i < 1; ++i)
     {
         m_data->updateParams();
-        m_sNe->solve(5);
+        m_sPhi->solve(100);
+        /*m_sNe->solve(5);
         m_sEn->solve(5);
         for (int j = 0; j < m_numberHeavySpicies; ++j)
         {
             m_sHeavy[j]->solve(5);
-        }
+        }*/
 
 
     }
-    m_sNe->getStepEuler();
-    m_sEn->getStepEuler();
-    for (int j = 0; j < m_numberHeavySpicies; ++j)
+    m_sPhi->getStepEuler();
+    //m_sNe->getStepEuler();
+    //m_sEn->getStepEuler();
+    /*for (int j = 0; j < m_numberHeavySpicies; ++j)
     {
         m_sHeavy[j]->getStepEuler();
     }*/
@@ -285,13 +296,13 @@ void MainWindow::simulateData(bool status)
         while(!m_animStopped &&  m_time <= (m_textEndTime->text().toDouble() - m_textStartTime->text().toDouble()))
         {
             m_time += 10.0*m_textDeltaTime->text().toDouble();
-            for (int i=0;i<10;i++)
+            for (int i=0;i<1;i++)
             {
             updateData();
             }
 
             //saveInStorage();
-            replotGraph(m_storage.size()-1);
+            replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
 
             /*QCoreApplication::processEvents();
             m_scrollBar->setRange(0, m_storage.size() - 1);
@@ -308,9 +319,9 @@ void MainWindow::simulateData(bool status)
 void MainWindow::drawDebug(bool)
 {
 
-
-
-    QVector<double> xf,yf;
+updateData();
+replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
+    /*QVector<double> xf,yf;
 
     FILE* file=fopen( "c:\\user\\devel\\RFFI_petya\\electro\\arpp.txt","r");
     double aa,bb;
@@ -409,7 +420,7 @@ void MainWindow::drawDebug(bool)
     m_customPlot->xAxis->setRange(m_minX,m_maxX);
     m_customPlot->yAxis->setRange(m_minY, m_maxY);
     m_customPlot->legend->setVisible(true);
-    m_customPlot->replot();
+    m_customPlot->replot();*/
 }
 
 

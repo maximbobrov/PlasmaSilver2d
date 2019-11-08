@@ -57,6 +57,7 @@ private:
     QLineEdit* m_textEndTime;
     QLineEdit* m_textDeltaTime;
     QScrollBar* m_scrollBar;
+    QScrollBar* m_scallingBar;
     QVector<QCheckBox*> m_checkBoxes;
     QPushButton* m_simulateButton;
     QPushButton* m_debugButton;

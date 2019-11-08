@@ -20,17 +20,17 @@ public:
     void paintGL();
     void resizeGL(int w, int h);
     XYZ get_color(double val,double min,double max);
-    void setField( double **arr, int N_X, int N_Y, double dx, double dy);
+    void setField( double **arr, double **eps, int N_X, int N_Y, double dx, double dy, double sc);
 
 
 private:
      double **arr = nullptr;
+     double **eps = nullptr;
      int N_X;
      int N_Y;
      double dx;
      double dy;
-
-
+     double sc;
 };
 
 #endif // GLWIDGET_H

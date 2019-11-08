@@ -57,6 +57,9 @@ public:
         double** arrMuomega;
         double** arrTe;
         double** arrE;
+        double** arrMask;
+        double** arrMaskPhi;
+        double** arrEps;
         int cellsX;
         int cellsY;
         double rho; //mixture density
@@ -75,9 +78,11 @@ public:
     void setDx(double dx = 0.01);
     void setDy(double dy = 0.01);
 
-    void setCellsNumber(int cellsNumber);
+    void setCellsXNumber(int cellsXNumber);
+    void setCellsYNumber(int cellsYNumber);
 
-    int getCellsNumber();
+    int getCellsXNumber();
+    int getCellsYNumber();
     double getDt();
     double getDx();
     double getDy();
@@ -90,7 +95,7 @@ public:
     int getHeavySpiciesCharge(int num);
     int getNumberHeavySpicies();
     double getN(); //total number of particles in one m^3
-    double* getReactionRate(simulationData::ReactionName reactName);
+    double** getReactionRate(simulationData::ReactionName reactName);
     double getReactionDe(simulationData::ReactionName reactName);
 
     void calcReaction(ReactionName reactName);
@@ -100,7 +105,8 @@ private:
     double m_dt;
     double m_dx;
     double m_dy;
-    int m_defaultCellsNumber;
+    int m_cellsX;
+    int m_cellsY;
     int m_numberHeavySpicies;
     simulationField2d* m_fieldNe;
     simulationField2d* m_fieldEnergy;

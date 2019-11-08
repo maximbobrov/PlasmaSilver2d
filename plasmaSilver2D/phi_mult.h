@@ -6,8 +6,8 @@
 //#include "globals.h"
 
 //for multigrid
-#define N_X 81
-#define N_Y 81
+#define N_X 129
+#define N_Y 129
 typedef struct
 {
     double a,bm,bp,cm,cp;
@@ -16,7 +16,6 @@ typedef struct
     double dx,dy;
 }INPUT_PARAM;
 
-double multigrid_N(INPUT_PARAM par, double field[N_X][N_Y], double rhs[N_X][N_Y], int itn, int N);
-double multigrid_N(INPUT_PARAM par, double** field, double** rhs, int itn, int N);
+double multigrid_N(INPUT_PARAM par, double** field, double** rhs, double** mask, double** maskValue, int itn,int N);
 
 #endif

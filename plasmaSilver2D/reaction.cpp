@@ -41,11 +41,19 @@ reaction::reaction(simulationData* data)
     m_pData=data;
     if (data != nullptr)
     {
-        int cn=data->getCellsNumber();
-        m_R=new double[cn];
-        for (int i = 0 ; i < cn ; i++)
+        int cx=data->getCellsXNumber();
+        int cy=data->getCellsYNumber();
+        m_R=new double*[cx];
+        for (int i = 0; i < cx; ++i)
         {
-            m_R[i] = 0;
+            m_R[i] = new double[cy];
+        }
+        for (int i = 0 ; i < cx ; i++)
+        {
+            for (int j = 0 ; j < cy ; j++)
+            {
+                m_R[i][j] = 0;
+            }
         }
     }
 }
@@ -60,7 +68,7 @@ double reaction::getDe()
     return 0.0;
 }
 
-double *reaction::getR()
+double** reaction::getR()
 {
     return m_R;
 }
@@ -82,11 +90,14 @@ void reactionEAr_EAr::calc()
 
     double N=m_pData->getN();
 
-    for (int i=0;i<m_pData->getCellsNumber();i++)
+    for (int i=0;i<m_pData->getCellsXNumber();i++)
     {
-        int a=m_pData->getCellsNumber();
-        m_R[i]= 0.0;//m_cs->getSpline(i*100.0/m_pData->getCellsNumber());
-        //m_cs->getSpline(En[i])*N*Ar[i]*Ne[i]*0.0;
+        for (int j=0;j<m_pData->getCellsYNumber();j++)
+        {
+            int a=m_pData->getCellsXNumber();
+            m_R[i][j]= 0.0;//m_cs->getSpline(i*100.0/m_pData->getCellsNumber());
+            //m_cs->getSpline(En[i])*N*Ar[i]*Ne[i]*0.0;
+        }
     }
 }
 
@@ -107,10 +118,13 @@ void reactionEAr_EArs::calc()
 
     double N=m_pData->getN();
 
-    for (int i=0;i<m_pData->getCellsNumber();i++)
+    for (int i=0;i<m_pData->getCellsXNumber();i++)
     {
-        m_R[i]= 0.0;//m_cs->getSpline(i*100.0/m_pData->getCellsNumber());
-        //m_cs->getSpline(En[i])*N*Ar[i]*Ne[i]*0.0;
+        for (int j=0;j<m_pData->getCellsYNumber();j++)
+        {
+            m_R[i][j]= 0.0;//m_cs->getSpline(i*100.0/m_pData->getCellsNumber());
+            //m_cs->getSpline(En[i])*N*Ar[i]*Ne[i]*0.0;
+        }
     }
 }
 
@@ -125,16 +139,19 @@ reactionEAr_2EArp::reactionEAr_2EArp(simulationData *data):reaction(data)
 
 void reactionEAr_2EArp::calc()
 {
-      //<<m_pData->getFieldEnergy()->name;
+    //<<m_pData->getFieldEnergy()->name;
     double** En=m_pData->getFieldEnergy()->arr;
     double** Ne=m_pData->getFieldNe()->arr;
     double** Ar=m_pData->getFieldHeavySpicies(simulationData::SpecieName::Ar)->arr;
 
     double N=m_pData->getN();
-    for (int i=0;i<m_pData->getCellsNumber();i++)
+    for (int i=0;i<m_pData->getCellsXNumber();i++)
     {
-       m_R[i] = m_cs->getSpline(i*100.0/m_pData->getCellsNumber());
-        //m_cs->getSpline(En[i])*N*Ar[i]*Ne[i]*0.0;
+        for (int j=0;j<m_pData->getCellsYNumber();j++)
+        {
+            m_R[i][j] = m_cs->getSpline(i*100.0/m_pData->getCellsXNumber());
+            //m_cs->getSpline(En[i])*N*Ar[i]*Ne[i]*0.0;
+        }
     }
 }
 
@@ -162,10 +179,13 @@ void reactionEArs_2EArp::calc()
 
     double N=m_pData->getN();
 
-    for (int i=0;i<m_pData->getCellsNumber();i++)
+    for (int i=0;i<m_pData->getCellsXNumber();i++)
     {
-        m_R[i] = 0.0;//m_cs->getSpline(i*100.0/m_pData->getCellsNumber());
-        //m_cs->getSpline(En[i])*N*Ars[i]*Ne[i]*0.0;
+        for (int j=0;j<m_pData->getCellsYNumber();j++)
+        {
+          m_R[i][j] = 0.0;//m_cs->getSpline(i*100.0/m_pData->getCellsNumber());
+          //m_cs->getSpline(En[i])*N*Ars[i]*Ne[i]*0.0;
+        }
     }
 }
 
@@ -183,16 +203,19 @@ reactionEAr_2EArp_comsol::reactionEAr_2EArp_comsol(simulationData *data):reactio
 void reactionEAr_2EArp_comsol::calc()
 {
     //qDebug()<<" calccc!";
-    for (int i=0;i<m_pData->getCellsNumber();i++)
+    for (int i=0;i<m_pData->getCellsXNumber();i++)
     {
-      // m_R[i] = m_spline->getSpline(m_pData->getArrTe()[i]);//i*100.0/m_pData->getCellsNumber());
+        for (int j=0;j<m_pData->getCellsYNumber();j++)
+        {
+        // m_R[i] = m_spline->getSpline(m_pData->getArrTe()[i]);//i*100.0/m_pData->getCellsNumber());
         //m_cs->getSpline(En[i])*N*Ar[i]*Ne[i]*0.0;
 
-      // qDebug()<<"i="<<i<<" R="<<m_R[i];
+        // qDebug()<<"i="<<i<<" R="<<m_R[i];
+        }
     }
 }
 
 double reactionEAr_2EArp_comsol::getDe()
 {
-return m_energy;
+    return m_energy;
 }
