@@ -21,26 +21,35 @@ simulationSolver::~simulationSolver()
 double simulationSolver::solve(int iNumberIteration)
 {
     double res = 0.0;
-    /*if(m_field != nullptr)
+    if(m_field != nullptr)
     {
-        double dz = m_pData->getDz();
+        double dx = m_pData->getDx();
+        double dy = m_pData->getDy();
         double dt = m_pData->getDt();
+        simulationData::simulationParameters* pParams = m_pData->getParameters();
         for (int i = 0; i < iNumberIteration; ++i)
         {
             getRhs();
-            for (int j = 1; j <  m_field->cellsNumber - 1; ++j)
+            for (int i = 1; i < m_field->cellsX-1; ++i)
             {
-                m_field->arr[j] = (dt * m_aNu[j] * (m_field->arr[j+1] + m_field->arr[j-1]) / (dz * dz) +  m_aRHS[j] * dt + m_field->arrPrev[j]) / (1.0 + 2.0 * m_aNu[j] * dt / (dz * dz));
+                for (int j = 1; j < m_field->cellsY-1; ++j)
+                {
+                    double D =1;// m_aNu[i][j];
+                    double a = 1.0/dt+D*((2.0)/(dx*dx)+(2.0)/(dy*dy));
+                    double bp = -D/(dx*dx);
+                    double bm = bp;
+                    double cp = -D/(dy*dy);
+                    double cm = cp;
+                    m_field->arr[i][j]=(m_field->arrPrev[i][j]+(m_aRHS[i][j] - (bp*m_field->arr[i+1][j]+bm*m_field->arr[i-1][j]+cp*m_field->arr[i][j+1]+cm*m_field->arr[i][j-1]))
+                                              /a )/* *pParams->arrMaskNe[i][j] + pParams->arrMaskNeValue[i][j]*/;
+                    /*m_field->arr[i][j] = (dt * m_aNu[i][j] * (m_field->arr[i][j+1] + m_field->arr[i][j-1]) / (dy * dy) + dt * m_aNu[i][j] * (m_field->arr[i+1][j] + m_field->arr[i-1][j]) / (dx * dx)
+                             +  m_aRHS[i][j] * dt + m_field->arrPrev[i][j]) / (1.0 + 2.0 * m_aNu[i][j] * dt / (dx * dx));*/
+                }
             }
             setBc();
 
         }
-        for (int j=1; j < m_field->cellsNumber - 1; j++)
-        {
-            res += (m_field->arr[j] - m_field->arrPrev[j]) / dt - (m_aNu[j] * (m_field->arr[j+1] - 2.0 * m_field->arr[j] + m_field->arr[j-1]) / (dz * dz) + m_aRHS[j]);
-        }
-        return res;
-    }*/
+    }
     return -1;
 }
 
@@ -63,11 +72,20 @@ void simulationSolver::getStepEuler()
 
 void simulationSolver::setBc()
 {
-    //periodic bc initally
-    /*double tmp=m_field->arr[1];
-    int last=m_field->cellsNumber - 1;
-    m_field->arr[0]=m_field->arr[m_field->cellsNumber - 2];
-    m_field->arr[last]=tmp;*/
+    for (int j = 0; j < m_field->cellsY; ++j)
+    {
+        m_field->arr[0][j] = m_field->arr[m_field->cellsX-2][j];
+        m_field->arr[m_field->cellsX-1][j] = m_field->arr[1][j];
+        m_field->arrPrev[0][j] = m_field->arrPrev[m_field->cellsX-2][j];
+        m_field->arrPrev[m_field->cellsX-1][j] = m_field->arrPrev[1][j];
+    }
+    for (int i = 0; i < m_field->cellsX; ++i)
+    {
+        m_field->arr[i][0] =0.0;// m_field->arr[i][m_field->cellsY-2];
+        m_field->arr[i][m_field->cellsY-1] = 0.0;//m_field->arr[i][1];
+        m_field->arrPrev[i][0] = 0.0;//= m_field->arrPrev[i][m_field->cellsY-2];
+        m_field->arrPrev[i][m_field->cellsY-1]= 0.0;// = m_field->arrPrev[i][1];
+    }
 
 }
 
@@ -109,14 +127,18 @@ double solverNe::getRhs()
     double** R1_Ar_e=m_pData->getReactionRate(simulationData::ReactionName::comsol_eAr_2eArp);
     double mult=pParams->p/(pParams->T*8.314);
 
-    //double dz = m_pData->getDz();
-    /* for (int i = 0; i < m_field ->cellsNumber-1; ++i)
+    for (int i = 1; i < m_field->cellsX-1; ++i)
     {
-        m_aRHS[i]= 0.25*mult*R1_Ar_e[i]*m_field->arr[i]
-                   + pParams->arrMue[i] * pParams->arrE[i] * simulationTools::ddzCentral(m_field->arr, m_field ->cellsNumber, dz, i)
-                   + pParams->arrMue[i] * m_field->arr[i] * simulationTools::ddzCentral(pParams->arrE, m_field ->cellsNumber, dz, i);
-                   ;//+ simulationTools::ddzCentral(m_field->arr, m_field ->cellsNumber, dz, i) * simulationTools::ddzCentral(pParams->arrDe, m_field ->cellsNumber, dz, i);
-    }*/
+        for (int j = 1; j < m_field->cellsY-1; ++j)
+        {
+
+            m_aRHS[i][j]= //0.25*mult*R1_Ar_e[i][j]*m_field->arr[i][j]
+                    + pParams->arrMue[i][j] * pParams->arrEx[i][j] * simulationTools::ddxUpWind(m_field->arr, m_field->cellsX, m_pData->getDx(), i, j, pParams->arrEx[i][j])
+                    + pParams->arrMue[i][j] * pParams->arrEy[i][j] * simulationTools::ddyUpWind(m_field->arr, m_field->cellsY, m_pData->getDy(), i, j, pParams->arrEy[i][j])
+                    + pParams->arrMue[i][j] * m_field->arr[i][j] * pParams->arrLaplPhi[i][j];
+           //+ simulationTools::ddzCentral(m_field->arr, m_field ->cellsNumber, dz, i) * simulationTools::ddzCentral(pParams->arrDe, m_field ->cellsNumber, dz, i);
+        }
+    }
     return 1;
 }
 
@@ -182,6 +204,14 @@ solverPhi::solverPhi(simulationData* pData)
 double solverPhi::getRhs()
 {
     simulationData::simulationParameters* pParams = m_pData->getParameters();
+    double q_e= 1.6*10e-19;
+    double eps_0=8.85*10e-12;
+    double q_over_eps0=q_e/eps_0;
+
+    double** pNe = m_pData->getFieldNe()->arr;
+    double** pArp = m_pData->getFieldHeavySpicies(0)->arr;
+
+    double mult= (pParams->p*6.022e23)/(pParams->T*8.314);
     double dx = m_pData->getDx();
     double dy = m_pData->getDy();
 
@@ -189,9 +219,10 @@ double solverPhi::getRhs()
     {
         for (int j=1; j<m_field ->cellsY-1; j++)
         {
-            m_aRHS[i][j]= /*q_e*(-n_1[i][j]+n_2[i][j])/eps0*/
-                    - (/*(m_field->arrPrev[i+1][j]-m_field->arrPrev[i-1][j])*(pParams->arrEps[i+1][j]-pParams->arrEps[i-1][j])/(4*dx*dx)*/
+            m_aRHS[i][j]=0; /*q_over_eps0*0.5*((pNe[i][j]+pNe[i+1][j])+mult*(pArp[i][j]+pArp[i+1][j]))*/
+                   /* - ((m_field->arrPrev[i+1][j]-m_field->arrPrev[i-1][j])*(pParams->arrEps[i+1][j]-pParams->arrEps[i-1][j])/(4*dx*dx)
                     +(m_field->arr[i][j+1]-m_field->arr[i][j])*(pParams->arrEps[i][j+1]-pParams->arrEps[i][j])/(dy*dy))/pParams->arrEps[i][j];
+            pParams->arrLaplPhi[i][j] = m_aRHS[i][j];*/
         }
     }
     return 1;
@@ -216,8 +247,8 @@ double solverPhi::solve(int iNumberIteration)
         {
             m_field->arr[i][m_field ->cellsY-1]=0.0;
             m_field->arr[i][0]=0.0;
-            if ((i<20)&&(i>0)) m_field->arr[i][m_field ->cellsY-1]=0.0;
-            if ((i>=60)&&(i<m_field ->cellsX-1)) m_field->arr[i][0]=-1500;
+            if ((i<20)&&(i>0)) m_field->arr[i][m_field ->cellsY-1]=-1500.0;
+            if ((i>=60)&&(i<m_field ->cellsX-1)) m_field->arr[i][0]=1500;
         }
 
         getRhs();
@@ -252,7 +283,7 @@ double solverPhi::solve(int iNumberIteration)
 
         for (int i=1;i<10;i++)
         {
-            multigrid_N(par, m_field->arr, m_aRHS, pParams->arrMask, pParams->arrMaskPhi, 8, 3);
+            multigrid_N(par, m_field->arr, m_aRHS, pParams->arrMaskPhi, pParams->arrMaskPhiValue, 8, 3);
         }
 
     }

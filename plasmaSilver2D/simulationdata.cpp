@@ -199,10 +199,14 @@ void simulationData::simulationParameters::init(int iCellsX, int iCellsY)
     arrMue  = new double*[cellsX];
     arrMueps  = new double*[cellsX];
     arrMuomega  = new double*[cellsX];
-    arrE  = new double*[cellsX];
+    arrEx = new double*[cellsX];
+    arrEy = new double*[cellsX];
+    arrLaplPhi = new double*[cellsX];
     arrTe  = new double*[cellsX];
-    arrMask = new double*[cellsX];
     arrMaskPhi = new double*[cellsX];
+    arrMaskPhiValue = new double*[cellsX];
+    arrMaskNe = new double*[cellsX];
+    arrMaskNeValue = new double*[cellsX];
     arrEps = new double*[cellsX];
 
     for (int i = 0; i < cellsX; ++i) {
@@ -212,10 +216,14 @@ void simulationData::simulationParameters::init(int iCellsX, int iCellsY)
         arrMue[i] = new double [cellsY];
         arrMueps[i] = new double [cellsY];
         arrMuomega[i] = new double [cellsY];
-        arrE[i] = new double [cellsY];
+        arrEx[i] = new double [cellsY];
+        arrEy[i] = new double [cellsY];
+        arrLaplPhi[i] = new double [cellsY];
         arrTe[i] = new double [cellsY];
-        arrMask[i] = new double[cellsY];
         arrMaskPhi[i] = new double[cellsY];
+        arrMaskPhiValue[i] = new double[cellsY];
+        arrMaskNe[i] = new double[cellsY];
+        arrMaskNeValue[i] = new double[cellsY];
         arrEps[i] = new double[cellsY];
     }
 
@@ -242,17 +250,28 @@ void simulationData::updateParams()
         {
             if((i >=  (pParams->cellsX-1) / 4  && i < 2*(pParams->cellsX-1)/4 && j >= (pParams->cellsY-1) / 4  && j < 2*(pParams->cellsY-1)/4))
             {
-                pParams->arrMask[i][j] = 0.0;
-                pParams->arrMaskPhi[i][j] = 1500;
+                pParams->arrMaskPhi[i][j] = 0.0;
+                pParams->arrMaskPhiValue[i][j] = 2500;
             }
             else
             {
-               pParams->arrMask[i][j] = 1.0;
-               pParams->arrMaskPhi[i][j] =0.0;
+               pParams->arrMaskPhi[i][j] = 1.0;
+               pParams->arrMaskPhiValue[i][j] =0.0;
             }
-            pParams->arrEps[i][j] = ( j >= (pParams->cellsY-1) / 4) ? 1.0 : 500.0;
+            pParams->arrEps[i][j] = ( j >= (pParams->cellsY-1) / 4) ? 1.0 : 1.0;
 
-            pParams->arrMue[i][j] =4e24/m_params->N; ; //4e4; m^2/(V*s)
+            if(((i >=  (pParams->cellsX-1) / 4  && i < 2*(pParams->cellsX-1)/4 && j >= (pParams->cellsY-1) / 4  && j < 2*(pParams->cellsY-1)/4)) || j <= (pParams->cellsY-1) / 4)
+            {
+                pParams->arrMaskNe[i][j] = 0.0;
+                pParams->arrMaskNeValue[i][j] = 1e5;
+            }
+            else
+            {
+                pParams->arrMaskNe[i][j] = 1.0;
+                pParams->arrMaskNeValue[i][j] =0.0;
+            }
+
+            pParams->arrMue[i][j] =1.0;//4e24/m_params->N; ; //4e4; m^2/(V*s)
             pParams->arrMueps[i][j] =5.0 * pParams->arrMue[i][j] / 3.0;
 
             pParams->arrTe[i][j]=(2.0/3.0)*fabs(pEn->arr[i][j])/(fabs(pNe->arr[i][j])+1);
@@ -261,7 +280,9 @@ void simulationData::updateParams()
 
             pParams->arrDe[i][j] = pParams->arrMue[i][j] * pParams->arrTe[i][j];
             pParams->arrDeps[i][j] = pParams->arrMueps[i][j] * pParams->arrTe[i][j];
-            //pParams->arrE[j] = - simulationTools::ddzCentral(pPhi->arr, pPhi->cellsNumber, dz, j);
+            pParams->arrEx[i][j] = - simulationTools::ddxCentral(pPhi->arr, pParams->cellsX, getDx(), i, j);
+            pParams->arrEy[i][j] = - simulationTools::ddyCentral(pPhi->arr, pParams->cellsY, getDy(), i, j);
+            pParams->arrLaplPhi[i][j] = 0.0;
             pParams->arrDomega[i][j] = 0.01;// m^2/s
             pParams->arrMuomega[i][j]=pParams->arrDomega[i][j]*q/(k_B_const*pParams->T);
         }

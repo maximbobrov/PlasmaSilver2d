@@ -56,9 +56,13 @@ public:
         double** arrMueps;
         double** arrMuomega;
         double** arrTe;
-        double** arrE;
-        double** arrMask;
+        double** arrEx;
+        double** arrEy;
+        double** arrLaplPhi;
         double** arrMaskPhi;
+        double** arrMaskPhiValue;
+        double** arrMaskNe;
+        double** arrMaskNeValue;
         double** arrEps;
         int cellsX;
         int cellsY;

@@ -15,7 +15,7 @@ typedef struct
     int w_bc_val,e_bc_val,n_bc_val,s_bc_val;
     double dx,dy;
 }INPUT_PARAM;
-
+double jacobi_N(INPUT_PARAM par, double field[N_X][N_Y], double rhs[N_X][N_Y],double mask[N_X][N_Y],double maskValue[N_X][N_Y], int itn,int nx,int ny);
 double multigrid_N(INPUT_PARAM par, double** field, double** rhs, double** mask, double** maskValue, int itn,int N);
 
 #endif

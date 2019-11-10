@@ -41,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_grid->addWidget(m_customPlot,0,0,2,3);
     m_grid->addWidget(glWidget,2,0,2,3);
-   // m_grid->addLayout(m_vLayoutCheckBoxes,0,3,1,1);
+    // m_grid->addLayout(m_vLayoutCheckBoxes,0,3,1,1);
     m_grid->addWidget(m_simulateButton,6,0);
     m_grid->addWidget(m_debugButton,6,1);
     m_grid->addWidget(m_scallingBar,6,2,1,1);
@@ -62,7 +62,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_data->setDy(0.3/NY);
     m_data->setCellsXNumber(NX);
     m_data->setCellsYNumber(NY);
-    m_data->setDt(5e-12);
+    m_data->setDt(5e-7);
 
     m_sNe = new solverNe(m_data);
     m_sEn = new solverEnergy(m_data);
@@ -70,9 +70,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_textStartTime->setText(QString().number(0.0));
     m_textDeltaTime->setText(QString().number(m_data->getDt()));
-    m_textEndTime->setText(QString().number(1e-12));
+    m_textEndTime->setText(QString().number(1e-3));
 
-    m_scallingBar->setRange(0,500);
+    m_scallingBar->setRange(0,100);
     m_scallingBar->setValue(50);
 
     connect (m_simulateButton, SIGNAL(clicked(bool)), this, SLOT(simulateData(bool)));
@@ -86,7 +86,8 @@ MainWindow::MainWindow(QWidget *parent)
     setCentralWidget(m_widget);
     setWindowTitle("PlasmaSolver");
     m_animStopped=true;
-  //  initData();
+    initData();
+    //  initData();
 }
 
 MainWindow::~MainWindow()
@@ -97,7 +98,8 @@ MainWindow::~MainWindow()
 void MainWindow::replotGraph(int number)
 {
     simulationData::simulationParameters* pParams=m_data->getParameters();
-    glWidget->setField( m_fPhi->arr , pParams->arrEps, NX, NY, m_data->getDx(), m_data->getDy(),m_scallingBar->value()*1.0/100);
+    glWidget->setField( m_fNe->arr , pParams->arrEps, NX, NY, m_data->getDx(), m_data->getDy(),m_scallingBar->value()*0.005/**1e-11*/);
+    //glWidget->setField( m_fPhi->arr , pParams->arrEps, NX, NY, m_data->getDx(), m_data->getDy(),m_scallingBar->value()*0.0001/100);
     glWidget->repaint();//
 
     /*m_maxY=-1e30;
@@ -206,7 +208,6 @@ void MainWindow::addPlotXY(double *arr,double*xx, char *name, int size, double s
 
 void MainWindow::initData()
 {
-
     m_fNe = m_data->getFieldNe();
     m_fEnergy = m_data->getFieldEnergy();
     m_fPhi = m_data->getFieldPhi();
@@ -218,11 +219,26 @@ void MainWindow::initData()
         m_sHeavy.push_back(new solverHeavySpicies(m_data, j));
     }
 
-   // m_data->setDz(2e-4/NZ);
-   //  m_data->setDt(1e-14);
+    // m_data->setDz(2e-4/NZ);
+    //  m_data->setDt(1e-14);
 
-   simulationData::simulationParameters* pParams=m_data->getParameters();
-   m_sPhi->init(0.0);
+    simulationData::simulationParameters* pParams=m_data->getParameters();
+    m_sPhi->init(0.0);
+    //m_sNe->init(100000.0);
+    for (int i = 0; i < NX; ++i)
+    {
+        for (int j = 0; j < NY; ++j)
+        {
+            double x=(i-NX/2)*m_data->getDx();
+            double y=(j-NY/2)*m_data->getDy();
+            double r=x*x+y*y;
+            m_fNe->arr[i][j] = /*1e5 + 1e11**/simulationTools::gauss(sqrt(x*x+y*y), NY*m_data->getDy()*0.1);
+            m_fNe->arrPrev[i][j] =m_fNe->arr[i][j];
+            m_fEnergy->arr[i][j] = 5.0*m_fNe->arr[i][j];
+            m_fEnergy->arrPrev[i][j] = m_fEnergy->arr[i][j];
+        }
+    }
+
     /*for (int i = 0; i < NZ; ++i) {
 
         double x_=i*m_data->getDz();
@@ -239,6 +255,7 @@ void MainWindow::initData()
         }
     }*/
     m_data->updateParams();
+    replotGraph(0);
 
     /*m_plots.clear();
     while (QLayoutItem* item = m_vLayoutCheckBoxes->takeAt(0)) {
@@ -250,7 +267,7 @@ void MainWindow::initData()
     //addPlot(pParams->arrE, m_fPhi->name, m_fPhi->cellsNumber-1, 1.0);
     for (int j = 0; j < m_numberHeavySpicies; ++j)
     {
-      //addPlot(m_fHeavy[j]->arr, m_fHeavy[j]->name, m_fHeavy[j]->cellsNumber);
+        //addPlot(m_fHeavy[j]->arr, m_fHeavy[j]->name, m_fHeavy[j]->cellsNumber);
     }
 
     /*for (int i = 0; i < m_checkBoxes.size(); ++i) {
@@ -267,9 +284,9 @@ void MainWindow::updateData()
     for (int i = 0; i < 1; ++i)
     {
         m_data->updateParams();
-        m_sPhi->solve(100);
-        /*m_sNe->solve(5);
-        m_sEn->solve(5);
+        m_sPhi->solve(10);
+        m_sNe->solve(3);
+        /*m_sEn->solve(5);
         for (int j = 0; j < m_numberHeavySpicies; ++j)
         {
             m_sHeavy[j]->solve(5);
@@ -278,7 +295,7 @@ void MainWindow::updateData()
 
     }
     m_sPhi->getStepEuler();
-    //m_sNe->getStepEuler();
+    m_sNe->getStepEuler();
     //m_sEn->getStepEuler();
     /*for (int j = 0; j < m_numberHeavySpicies; ++j)
     {
@@ -291,14 +308,14 @@ void MainWindow::simulateData(bool status)
 {
     if (status==true)
     {
-        initData();
+
         m_animStopped=false;
         while(!m_animStopped &&  m_time <= (m_textEndTime->text().toDouble() - m_textStartTime->text().toDouble()))
         {
             m_time += 10.0*m_textDeltaTime->text().toDouble();
             for (int i=0;i<1;i++)
             {
-            updateData();
+                updateData();
             }
 
             //saveInStorage();
@@ -319,8 +336,8 @@ void MainWindow::simulateData(bool status)
 void MainWindow::drawDebug(bool)
 {
 
-updateData();
-replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
+    updateData();
+    replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
     /*QVector<double> xf,yf;
 
     FILE* file=fopen( "c:\\user\\devel\\RFFI_petya\\electro\\arpp.txt","r");
