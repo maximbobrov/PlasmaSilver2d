@@ -271,7 +271,7 @@ void simulationData::updateParams()
                 pParams->arrMaskNeValue[i][j] =0.0;
             }
 
-            pParams->arrMue[i][j] =1.0;//4e24/m_params->N; ; //4e4; m^2/(V*s)
+            pParams->arrMue[i][j] = 4e24/m_params->N; ; //4e4; m^2/(V*s)
             pParams->arrMueps[i][j] =5.0 * pParams->arrMue[i][j] / 3.0;
 
             pParams->arrTe[i][j]=(2.0/3.0)*fabs(pEn->arr[i][j])/(fabs(pNe->arr[i][j])+1);

@@ -62,7 +62,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_data->setDy(0.3/NY);
     m_data->setCellsXNumber(NX);
     m_data->setCellsYNumber(NY);
-    m_data->setDt(5e-7);
+    m_data->setDt(1.5e-6);
 
     m_sNe = new solverNe(m_data);
     m_sEn = new solverEnergy(m_data);
@@ -70,7 +70,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_textStartTime->setText(QString().number(0.0));
     m_textDeltaTime->setText(QString().number(m_data->getDt()));
-    m_textEndTime->setText(QString().number(1e-3));
+    m_textEndTime->setText(QString().number(1e-2));
 
     m_scallingBar->setRange(0,100);
     m_scallingBar->setValue(50);
@@ -284,8 +284,8 @@ void MainWindow::updateData()
     for (int i = 0; i < 1; ++i)
     {
         m_data->updateParams();
-        m_sPhi->solve(10);
-        m_sNe->solve(3);
+        m_sPhi->solve(3);
+        m_sNe->solve(1);
         /*m_sEn->solve(5);
         for (int j = 0; j < m_numberHeavySpicies; ++j)
         {
@@ -294,7 +294,6 @@ void MainWindow::updateData()
 
 
     }
-    m_sPhi->getStepEuler();
     m_sNe->getStepEuler();
     //m_sEn->getStepEuler();
     /*for (int j = 0; j < m_numberHeavySpicies; ++j)

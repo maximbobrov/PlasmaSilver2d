@@ -29,28 +29,40 @@ double simulationSolver::solve(int iNumberIteration)
         simulationData::simulationParameters* pParams = m_pData->getParameters();
         for (int i = 0; i < iNumberIteration; ++i)
         {
-            getRhs();
-            for (int i = 1; i < m_field->cellsX-1; ++i)
-            {
-                for (int j = 1; j < m_field->cellsY-1; ++j)
-                {
-                    double D =1;// m_aNu[i][j];
-                    double a = 1.0/dt+D*((2.0)/(dx*dx)+(2.0)/(dy*dy));
-                    double bp = -D/(dx*dx);
-                    double bm = bp;
-                    double cp = -D/(dy*dy);
-                    double cm = cp;
-                    m_field->arr[i][j]=(m_field->arrPrev[i][j]+(m_aRHS[i][j] - (bp*m_field->arr[i+1][j]+bm*m_field->arr[i-1][j]+cp*m_field->arr[i][j+1]+cm*m_field->arr[i][j-1]))
-                                              /a )/* *pParams->arrMaskNe[i][j] + pParams->arrMaskNeValue[i][j]*/;
-                    /*m_field->arr[i][j] = (dt * m_aNu[i][j] * (m_field->arr[i][j+1] + m_field->arr[i][j-1]) / (dy * dy) + dt * m_aNu[i][j] * (m_field->arr[i+1][j] + m_field->arr[i-1][j]) / (dx * dx)
-                             +  m_aRHS[i][j] * dt + m_field->arrPrev[i][j]) / (1.0 + 2.0 * m_aNu[i][j] * dt / (dx * dx));*/
-                }
-            }
-            setBc();
+          
 
-        }
+        
+        getRhs();
+        double D =1.0;// m_aNu[i][j];
+        double a = 1.0/dt+D*((2.0)/(dx*dx)+(2.0)/(dy*dy));
+        double bp = -D/(dx*dx);
+        double bm = bp;
+        double cp = -D/(dy*dy);
+        double cm = cp;
+
+        INPUT_PARAM par;
+        par.a=a;
+        par.bp=bp;
+        par.bm=bm;
+        par.cp=cp;
+        par.cm=cm;
+
+        par.w_bc_type=2;
+        par.e_bc_type=2;
+        par.n_bc_type=0;
+        par.s_bc_type=0;
+
+        par.w_bc_val=0.0;
+        par.e_bc_val=0.0;
+        par.n_bc_val=0.0;
+        par.s_bc_val=0.0;
+        par.dx = dx;
+        par.dy = dy;
+
+
+         multigrid_N(par, m_field->arr, m_aRHS, pParams->arrMaskNe, pParams->arrMaskNeValue, 8, 0);
+		}
     }
-    return -1;
 }
 
 
@@ -126,17 +138,23 @@ double solverNe::getRhs()
     m_pData->calcReaction(simulationData::ReactionName::comsol_eAr_2eArp);
     double** R1_Ar_e=m_pData->getReactionRate(simulationData::ReactionName::comsol_eAr_2eArp);
     double mult=pParams->p/(pParams->T*8.314);
-
+    double ** phi  = m_pData->getFieldPhi()->arr;
+    double dx=m_pData->getDx();
+    double dy=m_pData->getDy();
+    double dt=m_pData->getDt();
+    double mu=1.0;
     for (int i = 1; i < m_field->cellsX-1; ++i)
     {
         for (int j = 1; j < m_field->cellsY-1; ++j)
         {
-
+            int mm=(m_field->arr[i][j]>1e-5);
             m_aRHS[i][j]= //0.25*mult*R1_Ar_e[i][j]*m_field->arr[i][j]
-                    + pParams->arrMue[i][j] * pParams->arrEx[i][j] * simulationTools::ddxUpWind(m_field->arr, m_field->cellsX, m_pData->getDx(), i, j, pParams->arrEx[i][j])
-                    + pParams->arrMue[i][j] * pParams->arrEy[i][j] * simulationTools::ddyUpWind(m_field->arr, m_field->cellsY, m_pData->getDy(), i, j, pParams->arrEy[i][j])
-                    + pParams->arrMue[i][j] * m_field->arr[i][j] * pParams->arrLaplPhi[i][j];
-           //+ simulationTools::ddzCentral(m_field->arr, m_field ->cellsNumber, dz, i) * simulationTools::ddzCentral(pParams->arrDe, m_field ->cellsNumber, dz, i);
+                     m_field->arrPrev[i][j]/dt
+                    + mm*pParams->arrMue[i][j]*(pParams->arrEx[i][j] * simulationTools::ddxUpWind(m_field->arr, m_field->cellsX, dx, i, j, pParams->arrEx[i][j])
+                    + pParams->arrEy[i][j] * simulationTools::ddyUpWind(m_field->arr, m_field->cellsY, dy, i, j, pParams->arrEy[i][j])
+                    + m_field->arr[i][j] * pParams->arrLaplPhi[i][j])
+                    + simulationTools::ddxCentral(m_field->arr,m_field->cellsX, dx, i, j) * simulationTools::ddxCentral(pParams->arrDe,m_field->cellsX, dx, i, j)
+                    + simulationTools::ddyCentral(m_field->arr,m_field->cellsY, dy, i, j) * simulationTools::ddyCentral(pParams->arrDe,m_field->cellsY, dy, i, j);
         }
     }
     return 1;
@@ -150,6 +168,7 @@ solverEnergy::~solverEnergy()
 solverEnergy::solverEnergy(simulationData* pData)
 {
     m_pData = pData;
+
     m_field = m_pData->getFieldEnergy();
     m_aNu = m_pData->getParameters()->arrDeps;
     m_aRHS = new double*[m_field ->cellsX];

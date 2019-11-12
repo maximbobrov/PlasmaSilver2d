@@ -70,8 +70,6 @@ double jacobi_N(INPUT_PARAM par, double field[N_X][N_Y], double rhs[N_X][N_Y],do
     }
     return 0;
 }
-
-
 double interp_up(double field[N_X][N_Y], double field2[N_X][N_Y], int nx,int ny)
 {
     int i,j,k,l;
