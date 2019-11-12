@@ -37,13 +37,23 @@ MainWindow::MainWindow(QWidget *parent)
     m_scrollBar = new QScrollBar(Qt::Horizontal,this);
     m_scallingBar = new QScrollBar(Qt::Horizontal,this);
     m_simulateButton = new QPushButton("Simulate");
-    m_debugButton = new QPushButton("plotDebug");
+    m_stopButton = new QPushButton("Stop");
+
+    m_showNeButton = new QPushButton("Show Ne");
+    m_showEnergyButton = new QPushButton("Show Energy");
+    m_showHeavyButton = new QPushButton("Show Heavy Spicies");
+    m_showPhiButton = new QPushButton("Show Phi");
+
+    m_vLayoutCheckBoxes->addWidget(m_showNeButton);
+    m_vLayoutCheckBoxes->addWidget(m_showEnergyButton);
+    m_vLayoutCheckBoxes->addWidget(m_showPhiButton);
+    m_vLayoutCheckBoxes->addWidget(m_showHeavyButton);
 
     m_grid->addWidget(m_customPlot,0,0,2,3);
     m_grid->addWidget(glWidget,2,0,2,3);
-    // m_grid->addLayout(m_vLayoutCheckBoxes,0,3,1,1);
+    m_grid->addLayout(m_vLayoutCheckBoxes,2,3,2,1);
     m_grid->addWidget(m_simulateButton,6,0);
-    m_grid->addWidget(m_debugButton,6,1);
+    m_grid->addWidget(m_stopButton,6,1);
     m_grid->addWidget(m_scallingBar,6,2,1,1);
 
     m_hLayout->addWidget(new QLabel("Start time:"));
@@ -62,7 +72,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_data->setDy(0.3/NY);
     m_data->setCellsXNumber(NX);
     m_data->setCellsYNumber(NY);
-    m_data->setDt(1.5e-6);
+    m_data->setDt(1e-7);
 
     m_sNe = new solverNe(m_data);
     m_sEn = new solverEnergy(m_data);
@@ -76,11 +86,17 @@ MainWindow::MainWindow(QWidget *parent)
     m_scallingBar->setValue(50);
 
     connect (m_simulateButton, SIGNAL(clicked(bool)), this, SLOT(simulateData(bool)));
-    connect (m_debugButton, SIGNAL(clicked(bool)), this, SLOT(drawDebug(bool)));
+    connect (m_stopButton, SIGNAL(clicked(bool)), this, SLOT(stopAnim(bool)));
     connect(m_scrollBar, SIGNAL(valueChanged(int)), this, SLOT(replotGraph(int)));
     connect(m_scallingBar, SIGNAL(valueChanged(int)), this, SLOT(replotGraph(int)));
 
-    m_simulateButton->setCheckable(true);
+    connect(m_showNeButton, SIGNAL(clicked(bool)), this, SLOT(setVisualArrNe()));
+    connect(m_showEnergyButton, SIGNAL(clicked(bool)), this, SLOT(setVisualArrEnergy()));
+    connect(m_showPhiButton, SIGNAL(clicked(bool)), this, SLOT(setVisualArrPhi()));
+    connect(m_showHeavyButton, SIGNAL(clicked(bool)), this, SLOT(setVisualArrHeavy()));
+
+
+
 
     m_widget->setLayout(m_grid);
     setCentralWidget(m_widget);
@@ -98,8 +114,8 @@ MainWindow::~MainWindow()
 void MainWindow::replotGraph(int number)
 {
     simulationData::simulationParameters* pParams=m_data->getParameters();
-    glWidget->setField( m_fNe->arr , pParams->arrEps, NX, NY, m_data->getDx(), m_data->getDy(),m_scallingBar->value()*0.005/**1e-11*/);
-    //glWidget->setField( m_fPhi->arr , pParams->arrEps, NX, NY, m_data->getDx(), m_data->getDy(),m_scallingBar->value()*0.0001/100);
+    glWidget->setField( m_visualArr , pParams->arrEps, NX, NY, m_data->getDx(), m_data->getDy(),m_scallingBar->value()*m_visualScale);
+
     glWidget->repaint();//
 
     /*m_maxY=-1e30;
@@ -229,13 +245,18 @@ void MainWindow::initData()
     {
         for (int j = 0; j < NY; ++j)
         {
-            double x=(i-NX/2)*m_data->getDx();
+            double x=(i-3*NX/4)*m_data->getDx();
             double y=(j-NY/2)*m_data->getDy();
             double r=x*x+y*y;
-            m_fNe->arr[i][j] = /*1e5 + 1e11**/simulationTools::gauss(sqrt(x*x+y*y), NY*m_data->getDy()*0.1);
+            m_fNe->arr[i][j] = 1e5 + 1e11*simulationTools::gauss(sqrt(x*x+y*y), NY*m_data->getDy()*0.1);
             m_fNe->arrPrev[i][j] =m_fNe->arr[i][j];
             m_fEnergy->arr[i][j] = 5.0*m_fNe->arr[i][j];
             m_fEnergy->arrPrev[i][j] = m_fEnergy->arr[i][j];
+            for (int h = 0; h < m_numberHeavySpicies; ++h)
+            {
+                m_fHeavy[h]->arr[i][j] =(m_fNe->arr[i][j]*pParams->T*8.314)/(pParams->p*6.022e23);
+                m_fHeavy[h]->arrPrev[i][j] = m_fHeavy[h]->arr[i][j];
+            }
         }
     }
 
@@ -254,6 +275,7 @@ void MainWindow::initData()
             m_fHeavy[j]->arrPrev[i] = m_fHeavy[j]->arr[i];
         }
     }*/
+    setVisualArrNe();
     m_data->updateParams();
     replotGraph(0);
 
@@ -285,34 +307,34 @@ void MainWindow::updateData()
     {
         m_data->updateParams();
         m_sPhi->solve(3);
-        m_sNe->solve(1);
-        /*m_sEn->solve(5);
+        m_sNe->solve(8);
+        m_sEn->solve(8);
         for (int j = 0; j < m_numberHeavySpicies; ++j)
         {
-            m_sHeavy[j]->solve(5);
-        }*/
+            m_sHeavy[j]->solve(8);
+        }
 
 
     }
     m_sNe->getStepEuler();
-    //m_sEn->getStepEuler();
-    /*for (int j = 0; j < m_numberHeavySpicies; ++j)
+    m_sEn->getStepEuler();
+    for (int j = 0; j < m_numberHeavySpicies; ++j)
     {
         m_sHeavy[j]->getStepEuler();
-    }*/
+    }
 
 }
 
 void MainWindow::simulateData(bool status)
 {
-    if (status==true)
+    //if (status==true)
     {
 
         m_animStopped=false;
         while(!m_animStopped &&  m_time <= (m_textEndTime->text().toDouble() - m_textStartTime->text().toDouble()))
         {
-            m_time += 10.0*m_textDeltaTime->text().toDouble();
-            for (int i=0;i<1;i++)
+            m_time += 3.0*m_textDeltaTime->text().toDouble();
+            for (int i=0;i<3;i++)
             {
                 updateData();
             }
@@ -320,123 +342,40 @@ void MainWindow::simulateData(bool status)
             //saveInStorage();
             replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
 
-            /*QCoreApplication::processEvents();
-            m_scrollBar->setRange(0, m_storage.size() - 1);
-            m_scrollBar->setValue(m_storage.size() - 1);*/
+            QCoreApplication::processEvents();
         }
-        m_simulateButton->click();
-    }
-    else
-    {
-        m_animStopped=true;
     }
 }
 
-void MainWindow::drawDebug(bool)
+void MainWindow::setVisualArrNe()
 {
-
-    updateData();
+    m_visualArr = m_fNe->arr;
+    m_visualScale =5e-13;// 0.005;
     replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
-    /*QVector<double> xf,yf;
+}
+void MainWindow::setVisualArrEnergy()
+{
+       simulationData::simulationParameters* pParams=m_data->getParameters();
+    m_visualArr =m_data->getReactionRate(simulationData::ReactionName::comsol_eAr_2eArp);//m_data->getArrTe();// m_fEnergy->arr;
+     m_visualScale = 2e-12;
+    replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
+}
+void MainWindow::setVisualArrPhi()
+{
+    m_visualArr = m_fPhi->arr;
+    m_visualScale = 0.00002;
+    replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
+}
+void MainWindow::setVisualArrHeavy()
+{
+   m_visualArr = m_fHeavy[0]->arr;
+   m_visualScale = 2e-11 * 1e23;
+   replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
+}
 
-    FILE* file=fopen( "c:\\user\\devel\\RFFI_petya\\electro\\arpp.txt","r");
-    double aa,bb;
-    char buf[1024];
-    int i=0;
-    while (fgets(buf,1024,file)!=NULL)
-    {
-        sscanf(buf,"%lf %lf", &aa,&bb);
-        xf.push_back(aa);
-        yf.push_back(bb*1e-10);
-        qDebug()<<"i="<<i<<" "<<xf[i]<<" "<<yf[i];
-        i++;
-    }
-
-
-    m_data->calcReaction(simulationData::ReactionName::comsol_eAr_2eArp);
-    //addPlot(m_data->getReactionRate(simulationData::ReactionName::eAr_2eArp), "eAr_2eArp" ,m_fNe->cellsNumber,0.5e12);
-
-    QVector<double> xv,yv;
-
-    double *r=m_data->getReactionRate(simulationData::ReactionName::comsol_eAr_2eArp);
-    for (int i=0;i<m_data->getCellsNumber();i++)
-    {
-        yv.push_back(r[i]*1e-10);
-        xv.push_back(i*100.0/m_data->getCellsNumber());
-
-        //  qDebug()<<"i="<<i<<" "<<xv[i]<<" "<<yv[i];
-    }
-
-
-
-
-    double m_maxY=-1e30;
-    double m_minY=+1e30;
-
-
-    double m_maxX=-1e30;
-    double m_minX=+1e30;
-
-    m_customPlot->clearGraphs();
-    m_customPlot->xAxis->setLabel("x");
-    m_customPlot->yAxis->setLabel("y");
-    QColor colors[6] = {QColor(255,0,0),QColor(0,255,0),QColor(0,0,255),QColor(255,255,0),QColor(0,255,255),QColor(255,0,255)};
-
-    m_customPlot->addGraph();
-    m_customPlot->graph(0)->setName(QString("ARR"));
-    m_customPlot->graph(0)->setLineStyle((QCPGraph::LineStyle)(1));
-    m_customPlot->graph(0)->addToLegend();
-    m_customPlot->graph(0)->setData(xv,yv);
-    QPen graphPen;
-    graphPen.setColor(colors[0]);
-    graphPen.setWidthF(1.5);
-    m_customPlot->graph(0)->setPen(graphPen);
-
-
-    m_customPlot->addGraph();
-    m_customPlot->graph(1)->setName(QString("ARR_coms"));
-    m_customPlot->graph(1)->setLineStyle((QCPGraph::LineStyle)(1));
-    m_customPlot->graph(1)->addToLegend();
-    m_customPlot->graph(1)->setData(xf,yf);
-
-    graphPen.setColor(colors[2]);
-    graphPen.setWidthF(1.5);
-    m_customPlot->graph(1)->setPen(graphPen);
-
-    for (int i=0; i < xv.size(); ++i)
-    {
-        if(yv[i] > m_maxY)
-            m_maxY = yv[i];
-        if(yv[i] < m_minY)
-            m_minY = yv[i];
-
-        if(xv[i] > m_maxX)
-            m_maxX = xv[i];
-        if(xv[i] < m_minX)
-            m_minX = xv[i];
-    }
-
-
-
-    for (int i=0; i < xf.size(); ++i)
-    {
-        if(yf[i] > m_maxY)
-            m_maxY = yf[i];
-        if(yf[i] < m_minY)
-            m_minY = yf[i];
-
-        if(xf[i] > m_maxX)
-            m_maxX = xf[i];
-        if(xf[i] < m_minX)
-            m_minX = xf[i];
-    }
-
-
-
-    m_customPlot->xAxis->setRange(m_minX,m_maxX);
-    m_customPlot->yAxis->setRange(m_minY, m_maxY);
-    m_customPlot->legend->setVisible(true);
-    m_customPlot->replot();*/
+void MainWindow::stopAnim(bool)
+{
+    m_animStopped=true;
 }
 
 

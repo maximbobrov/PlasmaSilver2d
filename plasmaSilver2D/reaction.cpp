@@ -203,11 +203,12 @@ reactionEAr_2EArp_comsol::reactionEAr_2EArp_comsol(simulationData *data):reactio
 void reactionEAr_2EArp_comsol::calc()
 {
     //qDebug()<<" calccc!";
+    double ** arrTe = m_pData->getArrTe();
     for (int i=0;i<m_pData->getCellsXNumber();i++)
     {
         for (int j=0;j<m_pData->getCellsYNumber();j++)
         {
-        // m_R[i] = m_spline->getSpline(m_pData->getArrTe()[i]);//i*100.0/m_pData->getCellsNumber());
+         m_R[i][j] = m_spline->getSpline(arrTe[i][j]);//i*100.0/m_pData->getCellsNumber());
         //m_cs->getSpline(En[i])*N*Ar[i]*Ne[i]*0.0;
 
         // qDebug()<<"i="<<i<<" R="<<m_R[i];

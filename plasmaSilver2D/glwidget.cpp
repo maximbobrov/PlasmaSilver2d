@@ -114,7 +114,7 @@ void GLWidget::paintGL()
     {
 
         double l_2;
-        double A = 0.1;
+        double A = 1.0;
         glColor3f(1,1,1);
         for (int i=1;i<N_X-1;i++)
         {

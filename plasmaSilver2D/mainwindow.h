@@ -44,8 +44,14 @@ public slots:
     void initData();
     void updateData();
     void simulateData(bool);
-    void drawDebug(bool);
+    void stopAnim(bool);
     void replotGraph(int);
+    void setVisualArrNe();
+    void setVisualArrEnergy();
+    void setVisualArrPhi();
+    void setVisualArrHeavy();
+
+
 private:
     QWidget* m_widget;
     GLWidget *glWidget;
@@ -60,7 +66,13 @@ private:
     QScrollBar* m_scallingBar;
     QVector<QCheckBox*> m_checkBoxes;
     QPushButton* m_simulateButton;
-    QPushButton* m_debugButton;
+    QPushButton* m_stopButton;
+
+    QPushButton* m_showNeButton;
+    QPushButton* m_showEnergyButton;
+    QPushButton* m_showHeavyButton;
+    QPushButton* m_showPhiButton;
+
     simulationData* m_data;
     solverNe* m_sNe;
     solverEnergy* m_sEn;
@@ -78,6 +90,9 @@ private:
     bool m_animStopped;
     double m_startTime,m_endTime;
     double m_time;
+    double** m_visualArr;
+    double m_visualScale;
+
 private:
     void saveInStorage();
     void addPlot(double* arr,char* name, int size, double scale = 1.0);

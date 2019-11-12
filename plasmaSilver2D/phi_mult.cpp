@@ -63,7 +63,7 @@ double jacobi_N(INPUT_PARAM par, double field[N_X][N_Y], double rhs[N_X][N_Y],do
                 }
 
                 field[i][j]=((rhs[i][j]-(b_p*field[i+1][j]+b_m*field[i-1][j]+c_p*field[i][j+1]+c_m*field[i][j-1]))
-                        /a)/**mask[i][j]+maskValue[i][j]*/;
+                        /a)*mask[i][j]+maskValue[i][j];
 
             }
         }

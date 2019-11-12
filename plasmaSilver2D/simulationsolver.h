@@ -23,6 +23,8 @@ protected:
     simulationData::simulationField2d* m_field;
     double** m_aRHS;
     double** m_aNu;
+    double** m_mask;
+    double** m_maskValue;
 };
 
 class solverNe : public simulationSolver

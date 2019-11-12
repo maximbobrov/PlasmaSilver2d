@@ -207,6 +207,10 @@ void simulationData::simulationParameters::init(int iCellsX, int iCellsY)
     arrMaskPhiValue = new double*[cellsX];
     arrMaskNe = new double*[cellsX];
     arrMaskNeValue = new double*[cellsX];
+    arrMaskEnergy = new double*[cellsX];
+    arrMaskEnergyValue = new double*[cellsX];
+    arrMaskHeavy = new double*[cellsX];
+    arrMaskHeavyValue = new double*[cellsX];
     arrEps = new double*[cellsX];
 
     for (int i = 0; i < cellsX; ++i) {
@@ -224,6 +228,10 @@ void simulationData::simulationParameters::init(int iCellsX, int iCellsY)
         arrMaskPhiValue[i] = new double[cellsY];
         arrMaskNe[i] = new double[cellsY];
         arrMaskNeValue[i] = new double[cellsY];
+        arrMaskEnergy[i] = new double[cellsY];
+        arrMaskEnergyValue[i] = new double[cellsY];
+        arrMaskHeavy[i] = new double[cellsY];
+        arrMaskHeavyValue[i] = new double[cellsY];
         arrEps[i] = new double[cellsY];
     }
 
@@ -251,24 +259,32 @@ void simulationData::updateParams()
             if((i >=  (pParams->cellsX-1) / 4  && i < 2*(pParams->cellsX-1)/4 && j >= (pParams->cellsY-1) / 4  && j < 2*(pParams->cellsY-1)/4))
             {
                 pParams->arrMaskPhi[i][j] = 0.0;
-                pParams->arrMaskPhiValue[i][j] = 2500;
+                pParams->arrMaskPhiValue[i][j] = -1500;
             }
             else
             {
                pParams->arrMaskPhi[i][j] = 1.0;
                pParams->arrMaskPhiValue[i][j] =0.0;
             }
-            pParams->arrEps[i][j] = ( j >= (pParams->cellsY-1) / 4) ? 1.0 : 1.0;
+            pParams->arrEps[i][j] = ( j >= (pParams->cellsY-1) / 4) ? 1.0 : 500.0;
 
             if(((i >=  (pParams->cellsX-1) / 4  && i < 2*(pParams->cellsX-1)/4 && j >= (pParams->cellsY-1) / 4  && j < 2*(pParams->cellsY-1)/4)) || j <= (pParams->cellsY-1) / 4)
             {
                 pParams->arrMaskNe[i][j] = 0.0;
                 pParams->arrMaskNeValue[i][j] = 1e5;
+                pParams->arrMaskEnergy[i][j] = 0.0;
+                pParams->arrMaskEnergyValue[i][j] = 1e5;
+                pParams->arrMaskHeavy[i][j] = 0.0;
+                pParams->arrMaskHeavyValue[i][j] = 1e-25;
             }
             else
             {
                 pParams->arrMaskNe[i][j] = 1.0;
                 pParams->arrMaskNeValue[i][j] =0.0;
+                pParams->arrMaskEnergy[i][j] = 1.0;
+                pParams->arrMaskEnergyValue[i][j] =0.0;
+                pParams->arrMaskHeavy[i][j] = 1.0;
+                pParams->arrMaskHeavyValue[i][j] =0.0;
             }
 
             pParams->arrMue[i][j] = 4e24/m_params->N; ; //4e4; m^2/(V*s)
