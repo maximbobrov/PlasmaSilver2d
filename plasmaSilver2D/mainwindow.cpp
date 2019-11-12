@@ -250,7 +250,7 @@ void MainWindow::initData()
             double r=x*x+y*y;
             m_fNe->arr[i][j] = 1e5 + 1e11*simulationTools::gauss(sqrt(x*x+y*y), NY*m_data->getDy()*0.1);
             m_fNe->arrPrev[i][j] =m_fNe->arr[i][j];
-            m_fEnergy->arr[i][j] = 5.0*m_fNe->arr[i][j];
+            m_fEnergy->arr[i][j] = 0.01*m_fNe->arr[i][j];
             m_fEnergy->arrPrev[i][j] = m_fEnergy->arr[i][j];
             for (int h = 0; h < m_numberHeavySpicies; ++h)
             {
@@ -259,6 +259,7 @@ void MainWindow::initData()
             }
         }
     }
+
 
     /*for (int i = 0; i < NZ; ++i) {
 
@@ -298,6 +299,7 @@ void MainWindow::initData()
     m_scrollBar->setRange(0,1);
     m_storage.clear();
     saveInStorage();*/
+    m_sPhi->solve(20);
 }
 
 void MainWindow::updateData()
@@ -306,12 +308,18 @@ void MainWindow::updateData()
     for (int i = 0; i < 1; ++i)
     {
         m_data->updateParams();
-        m_sPhi->solve(3);
-        m_sNe->solve(8);
-        m_sEn->solve(8);
-        for (int j = 0; j < m_numberHeavySpicies; ++j)
+
+       // m_sPhi->solve(2);
+
+        for (int j=0;j<3;j++)
         {
-            m_sHeavy[j]->solve(8);
+            m_data->calcReaction(simulationData::ReactionName::comsol_eAr_2eArp);
+            m_sNe->solve(1);
+            m_sEn->solve(1);
+            for (int j = 0; j < m_numberHeavySpicies; ++j)
+            {
+                m_sHeavy[j]->solve(1);
+            }
         }
 
 
@@ -355,9 +363,9 @@ void MainWindow::setVisualArrNe()
 }
 void MainWindow::setVisualArrEnergy()
 {
-       simulationData::simulationParameters* pParams=m_data->getParameters();
-    m_visualArr =m_data->getReactionRate(simulationData::ReactionName::comsol_eAr_2eArp);//m_data->getArrTe();// m_fEnergy->arr;
-     m_visualScale = 2e-12;
+    simulationData::simulationParameters* pParams=m_data->getParameters();
+    m_visualArr =/*m_data->getReactionRate(simulationData::ReactionName::comsol_eAr_2eArp);*/m_data->getArrTe();// m_fEnergy->arr;
+    m_visualScale = 0.01;//2e-12;
     replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
 }
 void MainWindow::setVisualArrPhi()
@@ -368,9 +376,9 @@ void MainWindow::setVisualArrPhi()
 }
 void MainWindow::setVisualArrHeavy()
 {
-   m_visualArr = m_fHeavy[0]->arr;
-   m_visualScale = 2e-11 * 1e23;
-   replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
+    m_visualArr = m_fHeavy[0]->arr;
+    m_visualScale = 2e-11 * 1e23;
+    replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
 }
 
 void MainWindow::stopAnim(bool)

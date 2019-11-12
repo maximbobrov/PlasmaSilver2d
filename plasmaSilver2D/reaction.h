@@ -62,7 +62,7 @@ public:
     virtual void calc();
      virtual double getDe();
 private:
-    double m_energy =  -15.80;// eV threshold energy
+    double m_energy = -158000;// -15.80;// eV threshold energy
     splineInterp * m_spline;
 };
 

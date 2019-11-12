@@ -24,7 +24,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 CONFIG += c++11
 
-LIBS += -lglu32 -lopengl32
+#LIBS += -lglu32 -lopengl32
 
 SOURCES += \
         crosssection.cpp \

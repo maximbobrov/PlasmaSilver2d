@@ -208,7 +208,7 @@ void reactionEAr_2EArp_comsol::calc()
     {
         for (int j=0;j<m_pData->getCellsYNumber();j++)
         {
-         m_R[i][j] = m_spline->getSpline(arrTe[i][j]);//i*100.0/m_pData->getCellsNumber());
+         m_R[i][j] =m_pData->getFieldNe()->arr[i][j]*0.0000001*m_spline->getSpline(arrTe[i][j]);//i*100.0/m_pData->getCellsNumber());
         //m_cs->getSpline(En[i])*N*Ar[i]*Ne[i]*0.0;
 
         // qDebug()<<"i="<<i<<" R="<<m_R[i];
