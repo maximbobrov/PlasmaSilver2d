@@ -1,6 +1,7 @@
 #include "glwidget.h"
 #include <math.h>
 #include <QDebug>
+#include <QString>
 
 GLWidget::GLWidget(QWidget *parent) :
     QGLWidget(parent)
@@ -26,14 +27,28 @@ void GLWidget::initializeGL()
 
 }
 
+void GLWidget::draw_text(double x, double y, double z, QString txt)
+{
+    glDisable(GL_LIGHTING);
+    glDisable(GL_FOG);
+    //glDisable(GL_DEPTH_TEST);
+    //qglColor(Qt::white);
+    glColor3f(1,1,1);
+
+    renderText(x, y, z, txt, QFont("Arial", 10, 0/*QFont::Bold*/, false) );
+    //glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+}
+
+
 XYZ GLWidget::get_color(double gval, double min, double max)
 {
     const int nn=4;
     int i;
     double val;
     val=gval;
-    if (val>max) val=max-0.00001;
-    if (val<min) val=min+0.00001;
+    if (val>max) val=max;
+    if (val<min) val=min;
 
     XYZ col_table[5];
     XYZ res;
@@ -45,12 +60,13 @@ XYZ GLWidget::get_color(double gval, double min, double max)
     col_table[4].x=1.0; col_table[4].y=0.0; col_table[4].z=0.0;
 
     double alpha;
-    if ((max-min)>0.00001)
+    if ((max-min)>1e-25)
     {
         alpha=(val-min)/(max-min)*nn;
         i=(int)(alpha);
         alpha=alpha-i;
-    }else
+    }
+    else
     {
         alpha=0.0;
         i=2;
@@ -100,34 +116,43 @@ void GLWidget::paintGL()
 
     //glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 
-    /*glBegin(GL_TRIANGLE_STRIP);
-    for (int i=0;i<=20;i++)
-    {
-        get_color(i/20.0,0.0,1.0);
+    int n=20;
 
-        glVertex2f(-0.75+i*1.5/20,-0.94);
-        glVertex2f(-0.75+i*1.5/20,-0.98);
-    }
-    glEnd();*/
 
     if(arr!=nullptr)
     {
 
-        double l_2;
-        double A = 1.0;
+        double l_21,l_22;
+        double max = 1e-25;
+        double min = 1e25;
         glColor3f(1,1,1);
-        for (int i=1;i<N_X-1;i++)
+
+        for (int i=0;i<N_X;i++)
+        {
+            for (int j=0;j<N_Y;j++)
+            {
+                max = arr[i][j] > max ? arr[i][j] : max;
+                min = arr[i][j] < min ? arr[i][j] : min;
+            }
+        }
+
+
+        for (int i=0;i<N_X-1;i++)
         {
             glBegin(GL_TRIANGLE_STRIP);
             for (int j=0;j<N_Y;j++)
             {
-                l_2=sc*(arr[i][j]/A);
-                glColor3f(l_2,l_2,-l_2);
+                l_21=sc*(arr[i][j] - min)/(max - min+ 1e-20 );
+                l_22=sc*(arr[i+1][j]- min)/(max - min + 1e-20);
 
+
+
+                get_color(sc*arr[i][j],min,max);
+                //glColor3f(l_21,l_21,-l_21);
                 glVertex2f(dx*(i-N_X/2),dy*(j-N_Y/2));
 
-                l_2=sc*(arr[i+1][j]/A);
-                glColor3f(l_2,l_2,-l_2);
+                get_color(sc*arr[i+1][j],min,max);
+                //glColor3f(l_22,l_22,-l_22);
                 glVertex2f(dx*(i+1-N_X/2),dy*(j-N_Y/2));
             }
             glEnd();
@@ -143,6 +168,21 @@ void GLWidget::paintGL()
                 }
             }
             glEnd();
+
+            glBegin(GL_TRIANGLE_STRIP);
+
+            for (int i=0;i<=n;i++)
+            {
+                double l_3 = sc*((min + i*(max - min))/(n-1))/(max - min+ 1e-20 );
+                get_color(sc*(min + i*(max - min))/(n-1),min,max);
+                //glColor3f(l_3,l_3,-l_3);
+                glVertex2f((i-n/2)*0.5/20,0.0-0.2*0.94);
+                glVertex2f((i-n/2)*0.5/20,0.0-0.2*0.98);
+            }
+            glEnd();
+
+
+
         }
 
         glColor3f(1,1,1);
@@ -154,6 +194,9 @@ void GLWidget::paintGL()
         glVertex3f(dx*(N_X-1-N_X/2),dy*(N_Y-1-N_Y/2),0);
         glVertex3f(dx*(-N_X/2),dy*(N_Y-1-N_Y/2),0);
         glEnd();
+
+        draw_text((-n/2)*0.5/20,0.0-0.2*0.9, 0.0,  QString().number(min));
+        draw_text((+n/2)*0.5/20,0.0-0.2*0.9, 0.0,  QString().number(max));
     }
 
 
@@ -161,6 +204,8 @@ void GLWidget::paintGL()
 
     glEnable(GL_DEPTH_TEST);
     //glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+
+
 
 
 }

@@ -82,8 +82,8 @@ MainWindow::MainWindow(QWidget *parent)
     m_textDeltaTime->setText(QString().number(m_data->getDt()));
     m_textEndTime->setText(QString().number(1e-2));
 
-    m_scallingBar->setRange(0,100);
-    m_scallingBar->setValue(50);
+    m_scallingBar->setRange(1,100);
+    m_scallingBar->setValue(1);
 
     connect (m_simulateButton, SIGNAL(clicked(bool)), this, SLOT(simulateData(bool)));
     connect (m_stopButton, SIGNAL(clicked(bool)), this, SLOT(stopAnim(bool)));
@@ -114,7 +114,7 @@ MainWindow::~MainWindow()
 void MainWindow::replotGraph(int number)
 {
     simulationData::simulationParameters* pParams=m_data->getParameters();
-    glWidget->setField( m_visualArr , pParams->arrEps, NX, NY, m_data->getDx(), m_data->getDy(),m_scallingBar->value()*m_visualScale);
+    glWidget->setField( m_visualArr , pParams->arrEps, NX, NY, m_data->getDx(), m_data->getDy(),m_scallingBar->value());
 
     glWidget->repaint();//
 
@@ -358,26 +358,22 @@ void MainWindow::simulateData(bool status)
 void MainWindow::setVisualArrNe()
 {
     m_visualArr = m_fNe->arr;
-    m_visualScale =5e-13;// 0.005;
     replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
 }
 void MainWindow::setVisualArrEnergy()
 {
     simulationData::simulationParameters* pParams=m_data->getParameters();
     m_visualArr =/*m_data->getReactionRate(simulationData::ReactionName::comsol_eAr_2eArp);*/m_data->getArrTe();// m_fEnergy->arr;
-    m_visualScale = 0.01;//2e-12;
     replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
 }
 void MainWindow::setVisualArrPhi()
 {
     m_visualArr = m_fPhi->arr;
-    m_visualScale = 0.00002;
     replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
 }
 void MainWindow::setVisualArrHeavy()
 {
     m_visualArr = m_fHeavy[0]->arr;
-    m_visualScale = 2e-11 * 1e23;
     replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
 }
 

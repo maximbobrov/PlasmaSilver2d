@@ -91,7 +91,6 @@ private:
     double m_startTime,m_endTime;
     double m_time;
     double** m_visualArr;
-    double m_visualScale;
 
 private:
     void saveInStorage();

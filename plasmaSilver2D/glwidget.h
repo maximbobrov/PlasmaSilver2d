@@ -6,7 +6,7 @@
 #include <QEvent>
 
 typedef struct {
-  float x,y,z;
+  double x,y,z;
 } XYZ;
 
 class GLWidget : public QGLWidget
@@ -21,6 +21,7 @@ public:
     void resizeGL(int w, int h);
     XYZ get_color(double val,double min,double max);
     void setField( double **arr, double **eps, int N_X, int N_Y, double dx, double dy, double sc);
+    void draw_text(double x, double y, double z, QString txt);
 
 
 private:
