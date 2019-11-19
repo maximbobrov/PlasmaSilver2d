@@ -79,7 +79,6 @@ void splineInterp::fillData(double esNew[][2], int n)//filling the data array in
     x0=esNew[0][0];
     m_x0=x0;
     x1=esNew[n-1][0];
-    qDebug()<<"x0 = "<<x0<<" x1= "<<x1;
 
 
     double dx2=pow((x1-x0),m_xPow)/m_splNum;
@@ -100,7 +99,6 @@ void splineInterp::fillData(double esNew[][2], int n)//filling the data array in
         if (j<n-1)
         {
             double alpha=(m_splX[i]-esNew[j][0])/(esNew[j+1][0]-esNew[j][0]);
-            qDebug()<<"alpha "<<alpha<<" j= "<<j;
             m_splA[i]=esNew[j][1]*(1.0-alpha)+esNew[j+1][1]*alpha;
         }else
             m_splA[i]=esNew[n-1][1];
@@ -108,7 +106,6 @@ void splineInterp::fillData(double esNew[][2], int n)//filling the data array in
         m_splB[i]=0.0;
         m_splC[i]=0.0;
         m_splD[i]=0.0;
-        qDebug()<<"i = "<<i<<" xi = "<<m_splX[i]<<" yi ="<<m_splA[i];
     }
 
 

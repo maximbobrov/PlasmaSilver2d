@@ -11,12 +11,14 @@
 #include <QLabel>
 #include <QVector>
 #include <QCheckBox>
+#include <QProgressBar>
 #include "glwidget.h"
 
 #include "simulationdata.h"
 #include "simulationsolver.h"
 #include "simulationtools.h"
-
+#define NX 129
+#define NY 129
 
 class MainWindow : public QMainWindow
 {
@@ -27,10 +29,9 @@ public:
     ~MainWindow();
 
     struct plotStruct{
-        QVector<double> x, y;
-        double* arr;
+        double arr[NX][NY];
+        double **arrRef;
         QString name;
-        int size;
         double scale;
         bool visible;
     };
@@ -42,10 +43,11 @@ public:
 
 public slots:
     void initData();
-    void updateData();
+    void updateData(int);
     void simulateData(bool);
     void stopAnim(bool);
     void replotGraph(int);
+    void setFields(int);
     void setVisualArrNe();
     void setVisualArrEnergy();
     void setVisualArrPhi();
@@ -59,12 +61,15 @@ private:
     QGridLayout* m_grid;
     QVBoxLayout* m_vLayoutCheckBoxes;
     QHBoxLayout* m_hLayout;
+    QHBoxLayout* m_hLayoutButton;
     QLineEdit* m_textStartTime;
     QLineEdit* m_textEndTime;
     QLineEdit* m_textDeltaTime;
     QScrollBar* m_scrollBar;
     QScrollBar* m_scallingBar;
+    QScrollBar* m_crossBar;
     QVector<QCheckBox*> m_checkBoxes;
+    QProgressBar* m_progressBar;
     QPushButton* m_simulateButton;
     QPushButton* m_stopButton;
 
@@ -91,10 +96,11 @@ private:
     double m_startTime,m_endTime;
     double m_time;
     double** m_visualArr;
+    QString m_visualArrName;
 
 private:
     void saveInStorage();
-    void addPlot(double* arr,char* name, int size, double scale = 1.0);
+    void addPlot(double** arr,char* name,double scale = 1.0);
     void addPlotXY(double *arr,double*xx, char *name, int size, double scale = 1.0);
 };
 

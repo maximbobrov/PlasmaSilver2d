@@ -180,7 +180,6 @@ double solverEnergy::getRhs()
     double de=m_pData->getReactionDe(simulationData::ReactionName::comsol_eAr_2eArp);
 
     double mult=fabs(m_pData->q*de*pParams->p/(pParams->T*8.314));
-    qDebug()<<"mult="<<mult;
     /*for (int i = 0; i < m_field ->cellsNumber-1; ++i)
     {
         double electronFlux =  - pParams->arrMue[i] * pParams->arrE[i] * pNe->arr[i] - pParams->arrDe[i]*simulationTools::ddzCentral(pNe->arr, m_field ->cellsNumber, dz, i);

@@ -81,15 +81,17 @@ XYZ GLWidget::get_color(double gval, double min, double max)
 
 }
 
-void GLWidget::setField(double **iArr, double **iEps, int iN_X, int iN_Y, double idx, double idy, double isc = 1.0)
+void GLWidget::setField(double **iArr, double **iEps, double **iElectrod, int iN_X, int iN_Y, double idx, double idy, double iCrossNum, double isc = 1.0)
 {
     arr = iArr;
     eps = iEps;
+    electrod = iElectrod;
     N_X = iN_X;
     N_Y = iN_Y;
     dx =  idx;
     dy =  idy;
     sc = isc;
+    crossNum = iCrossNum;
 }
 
 void GLWidget::paintGL()
@@ -118,7 +120,6 @@ void GLWidget::paintGL()
 
     int n=20;
 
-
     if(arr!=nullptr)
     {
 
@@ -136,6 +137,13 @@ void GLWidget::paintGL()
             }
         }
 
+        glBegin(GL_LINES);
+        glColor3f(1,0,0);
+        glLineWidth(3);
+        glVertex2f(dx*(-N_X/2-3),dy*(crossNum-N_Y/2));
+        glVertex2f(dx*(-N_X/2+N_X-1+3),dy*(crossNum-N_Y/2));
+        glEnd();
+
 
         for (int i=0;i<N_X-1;i++)
         {
@@ -145,14 +153,10 @@ void GLWidget::paintGL()
                 l_21=sc*(arr[i][j] - min)/(max - min+ 1e-20 );
                 l_22=sc*(arr[i+1][j]- min)/(max - min + 1e-20);
 
-
-
                 get_color(sc*arr[i][j],min,max);
-                //glColor3f(l_21,l_21,-l_21);
                 glVertex2f(dx*(i-N_X/2),dy*(j-N_Y/2));
 
                 get_color(sc*arr[i+1][j],min,max);
-                //glColor3f(l_22,l_22,-l_22);
                 glVertex2f(dx*(i+1-N_X/2),dy*(j-N_Y/2));
             }
             glEnd();
@@ -169,13 +173,26 @@ void GLWidget::paintGL()
             }
             glEnd();
 
+            glPointSize(1);
+            glBegin(GL_POINTS);
+            glColor3f(0.0,0.0,0.0);
+            for (int j=0;j<N_Y;j++)
+            {
+                if(electrod[i][j] < 1.0)
+                {
+                    glVertex2f(dx*(i-N_X/2),dy*(j-N_Y/2));
+                }
+            }
+            glEnd();
+
+
+
             glBegin(GL_TRIANGLE_STRIP);
 
             for (int i=0;i<=n;i++)
             {
                 double l_3 = sc*((min + i*(max - min))/(n-1))/(max - min+ 1e-20 );
                 get_color(sc*(min + i*(max - min))/(n-1),min,max);
-                //glColor3f(l_3,l_3,-l_3);
                 glVertex2f((i-n/2)*0.5/20,0.0-0.2*0.94);
                 glVertex2f((i-n/2)*0.5/20,0.0-0.2*0.98);
             }

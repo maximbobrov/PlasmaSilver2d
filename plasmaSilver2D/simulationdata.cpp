@@ -162,8 +162,7 @@ void simulationData::simulationField::init(int iCellsNumber, char* iName)
     arr = new double[iCellsNumber];
     arrPrev = new double[iCellsNumber];
     int len=strlen(iName);
-    name = new char[len+1];
-    name[len]=0;
+    name = new char[len];
     strcpy(name, iName);
 }
 
