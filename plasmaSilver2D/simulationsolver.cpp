@@ -8,6 +8,33 @@
 simulationSolver::simulationSolver(simulationData* ipData/*= nullptr*/)
 {
     m_pData = ipData;
+
+
+    if (ipData!=nullptr)
+    {
+
+        int cellsX =  ipData->getCellsXNumber();
+        int cellsY =  ipData->getCellsYNumber();
+
+        qDebug()<<"sdasdsa "<<cellsX<<" "<<cellsY;
+
+
+
+        m_a = new double*[cellsX];
+        m_bm  = new double*[cellsX];
+        m_bp  = new double*[cellsX];
+        m_cm  = new double*[cellsX];
+        m_cp  = new double*[cellsX];
+
+        for (int i = 0; i < cellsX; ++i) {
+            m_a[i] = new double [cellsY];
+            m_bm[i] = new double [cellsY];
+            m_bp[i] = new double [cellsY];
+            m_cm[i] = new double [cellsY];
+            m_cp[i] = new double [cellsY];
+        }
+
+    }
     m_aRHS = nullptr;
     m_field = nullptr;
     m_aNu = nullptr;
@@ -26,6 +53,9 @@ double simulationSolver::solve(int iNumberIteration)
         double dx = m_pData->getDx();
         double dy = m_pData->getDy();
         double dt = m_pData->getDt();
+
+        updateMatrix();
+
         simulationData::simulationParameters* pParams = m_pData->getParameters();
         for (int i = 0; i < iNumberIteration; ++i)
         {
@@ -36,12 +66,21 @@ double simulationSolver::solve(int iNumberIteration)
             {
                 for (int j = 1; j < m_field->cellsY-1; ++j)
                 {
-                    double D = m_aNu[i][j];
-                    double a = 1.0/dt+D*((2.0)/(dx*dx)+(2.0)/(dy*dy));
-                    double bp = -D/(dx*dx);
-                    double bm = bp;
-                    double cp = -D/(dy*dy);
-                    double cm = cp;
+                    //double D = m_aNu[i][j];
+                    double a = m_a[i][j];//1.0/dt+D*((2.0)/(dx*dx)+(2.0)/(dy*dy));
+                    double bp = m_bp[i][j];//-D/(dx*dx);
+                    double bm = m_bm[i][j];
+                    double cp = m_cp[i][j];
+                    double cm = m_cm[i][j];
+
+
+                   /* double D = m_aNu[i][j];
+                                     double a = 1.0/dt+D*((2.0)/(dx*dx)+(2.0)/(dy*dy));
+                                        double bp = -D/(dx*dx);
+                                        double bm = bp;
+                                        double cp = -D/(dy*dy);
+                                        double cm = cp;*/
+
                     m_field->arr[i][j]=((m_aRHS[i][j]-(bp*m_field->arr[i+1][j]+bm*m_field->arr[i-1][j]+cp*m_field->arr[i][j+1]+cm*m_field->arr[i][j-1]))
                             /a)*m_mask[i][j]+m_maskValue[i][j];
                 }
@@ -85,6 +124,49 @@ void simulationSolver::setBc()
         m_field->arrPrev[i][m_field->cellsY-1]= 0.0;// = m_field->arrPrev[i][1];
     }
 
+    simulationData::boundary* b= &(this->m_pData->getParameters()->bound);
+    for (int n=0; n<b->num; n++)
+    {
+        int ii=b->arrI[n];
+        int jj=b->arrJ[n];
+
+        int iip=b->arrI_inter[n];
+        int jjp=b->arrJ_inter[n];
+
+        m_maskValue[ii][jj]=m_field->arr[iip][jjp];
+
+
+    }
+
+}
+
+void simulationSolver::updateMatrix()
+{
+    double dx = m_pData->getDx();
+    double dy = m_pData->getDy();
+    double dt = m_pData->getDt();
+
+    int cellsx=m_pData->getCellsXNumber();
+    int cellsy=m_pData->getCellsYNumber();
+
+    for (int i = 0; i < cellsx; ++i)
+    {
+        for (int j = 0; j < cellsy; ++j)
+        {
+            double D = m_aNu[i][j];
+            double a = 1.0/dt+D*((2.0)/(dx*dx)+(2.0)/(dy*dy));
+            double bp = -D/(dx*dx);
+            double bm = bp;
+            double cp = -D/(dy*dy);
+            double cm = cp;
+
+            m_a[i][j] = a;
+            m_bm[i][j] = bm;
+            m_bp[i][j] = bp;
+            m_cm[i][j] = cp;
+            m_cp[i][j] = cm;
+        }
+    }
 }
 
 double simulationSolver::init(double value)
@@ -104,7 +186,7 @@ solverNe::~solverNe()
 
 }
 
-solverNe::solverNe(simulationData* pData)
+solverNe::solverNe(simulationData* pData):simulationSolver(pData)
 {
     m_pData = pData;
     m_field = m_pData->getFieldNe();
@@ -135,6 +217,7 @@ double solverNe::getRhs()
     {
         for (int j = 1; j < m_field->cellsY-1; ++j)
         {
+
             int mm=(m_field->arr[i][j]>1e-5);
             m_aRHS[i][j]= mult*R1_Ar_e[i][j] //*m_field->arr[i][j]+
                     +m_field->arrPrev[i][j]/dt
@@ -148,12 +231,77 @@ double solverNe::getRhs()
     return 1;
 }
 
+void solverNe::setBc()
+{
+    for (int j = 0; j < m_field->cellsY; ++j)
+    {
+        m_field->arr[0][j] =0.0;// m_field->arr[m_field->cellsX-2][j];
+        m_field->arr[m_field->cellsX-1][j] =0.0;// m_field->arr[1][j];
+        m_field->arrPrev[0][j] =0.0;// m_field->arrPrev[m_field->cellsX-2][j];
+        m_field->arrPrev[m_field->cellsX-1][j] =0.0;// m_field->arrPrev[1][j];
+    }
+    for (int i = 0; i < m_field->cellsX; ++i)
+    {
+        m_field->arr[i][0] =0.0;// m_field->arr[i][m_field->cellsY-2];
+        m_field->arr[i][m_field->cellsY-1] = 0.0;//m_field->arr[i][1];
+        m_field->arrPrev[i][0] = 0.0;//= m_field->arrPrev[i][m_field->cellsY-2];
+        m_field->arrPrev[i][m_field->cellsY-1]= 0.0;// = m_field->arrPrev[i][1];
+    }
+
+
+    //double electronFluxX = 0.5*(- mm2 * pParams->arrMue[i][j] * pParams->arrEx[i][j] * pNe->arr[i][j] - pParams->arrDe[i][j]*simulationTools::ddxCentral(pNe->arr, m_field->cellsX, dx, i, j));
+    //double electronFluxY = 0.5*(- mm2 * pParams->arrMue[i][j] * pParams->arrEy[i][j] * pNe->arr[i][j] - pParams->arrDe[i][j]*simulationTools::ddyCentral(pNe->arr, m_field->cellsY, dy, i, j));
+
+
+    //pParams->arrMue[i][j] * pParams->arrEx[i][j] * pNe->arr[i][j] - pParams->arrDe[i][j]*simulationTools::ddxCentral(pNe->arr, m_field->cellsX, dx, i, j);
+
+  simulationData::simulationParameters* pParams = m_pData->getParameters();
+
+  double dx=m_pData->getDx();
+  double dy=m_pData->getDy();
+
+
+    simulationData::boundary* b= &(this->m_pData->getParameters()->bound);
+    for (int n=0; n<b->num; n++)
+    {
+        int ii=b->arrI[n];
+        int jj=b->arrJ[n];
+
+        int iip=b->arrI_inter[n];
+        int jjp=b->arrJ_inter[n];
+
+        m_maskValue[ii][jj]=m_field->arr[iip][jjp];
+
+
+        double d=pParams->arrDe[iip][jjp];
+        double mu=pParams->arrMue[iip][jjp];
+        double Ex=pParams->arrEx[iip][jjp];
+        double Ey=pParams->arrEy[iip][jjp];
+
+
+
+        double dxy=sqrt(dx*dx*(iip-ii)*(iip-ii) + dy*dy*(jjp-jj)*(jjp-jj));
+        double nx=dx*(iip-ii)/dxy;
+        double ny=dy*(jjp-jj)/dxy;
+
+        double En=-(Ex*nx+Ey*ny);
+        double ep=m_field->arr[iip][jjp];
+        double ebound=0;
+
+        //pParams->arrMue[iip][jjp] * pParams->arrEx[iip][jjp] * pNe->arr[iip][jjp] - pParams->arrDe[iip][jjp]*(pNe->arr[iip][jjp]-pNe->arr[ii][jj])/dxy=0;
+        //mu*En*ep - d*(ep-ebound)/dxy=0;
+        ebound = ep - mu*En*ep*dxy/d;
+        m_maskValue[ii][jj]=m_maskValue[ii][jj]*0.98+0.02*ebound;//m_field->arr[iip][jjp];
+
+    }
+}
+
 solverEnergy::~solverEnergy()
 {
 
 }
 
-solverEnergy::solverEnergy(simulationData* pData)
+solverEnergy::solverEnergy(simulationData* pData):simulationSolver(pData)
 {
     m_pData = pData;
 
@@ -198,6 +346,7 @@ double solverEnergy::getRhs()
     {
         for (int j = 1; j < m_field->cellsY-1; ++j)
         {
+
             int mm=(m_field->arr[i][j]>1e-5);
             int mm2=(pNe->arr[i][j]>1e-5);
             double electronFluxX = 0.5*(- mm2 * pParams->arrMue[i][j] * pParams->arrEx[i][j] * pNe->arr[i][j] - pParams->arrDe[i][j]*simulationTools::ddxCentral(pNe->arr, m_field->cellsX, dx, i, j));
@@ -210,9 +359,68 @@ double solverEnergy::getRhs()
                     + simulationTools::ddxCentral(m_field->arr,m_field->cellsX, dx, i, j) * simulationTools::ddxCentral(pParams->arrDeps,m_field->cellsX, dx, i, j)
                     + simulationTools::ddyCentral(m_field->arr,m_field->cellsY, dy, i, j) * simulationTools::ddyCentral(pParams->arrDeps,m_field->cellsY, dy, i, j)
                     - electronFluxX * pParams->arrEx[i][j] - electronFluxY * pParams->arrEy[i][j];
+
         }
     }
     return 1;
+}
+
+void solverEnergy::setBc()
+{
+    for (int j = 0; j < m_field->cellsY; ++j)
+    {
+        m_field->arr[0][j] =0.0;// m_field->arr[m_field->cellsX-2][j];
+        m_field->arr[m_field->cellsX-1][j] =0.0;// m_field->arr[1][j];
+        m_field->arrPrev[0][j] =0.0;// m_field->arrPrev[m_field->cellsX-2][j];
+        m_field->arrPrev[m_field->cellsX-1][j] =0.0;// m_field->arrPrev[1][j];
+    }
+    for (int i = 0; i < m_field->cellsX; ++i)
+    {
+        m_field->arr[i][0] =0.0;// m_field->arr[i][m_field->cellsY-2];
+        m_field->arr[i][m_field->cellsY-1] = 0.0;//m_field->arr[i][1];
+        m_field->arrPrev[i][0] = 0.0;//= m_field->arrPrev[i][m_field->cellsY-2];
+        m_field->arrPrev[i][m_field->cellsY-1]= 0.0;// = m_field->arrPrev[i][1];
+    }
+
+    simulationData::simulationParameters* pParams = m_pData->getParameters();
+
+    double dx=m_pData->getDx();
+    double dy=m_pData->getDy();
+
+    simulationData::boundary* b= &(this->m_pData->getParameters()->bound);
+    for (int n=0; n<b->num; n++)
+    {
+        int ii=b->arrI[n];
+        int jj=b->arrJ[n];
+
+        int iip=b->arrI_inter[n];
+        int jjp=b->arrJ_inter[n];
+
+        m_maskValue[ii][jj]=m_field->arr[iip][jjp];
+
+
+        double d=pParams->arrDeps[iip][jjp];
+        double mu=pParams->arrMueps[iip][jjp];
+        double Ex=pParams->arrEx[iip][jjp];
+        double Ey=pParams->arrEy[iip][jjp];
+
+
+
+        double dxy=sqrt(dx*dx*(iip-ii)*(iip-ii) + dy*dy*(jjp-jj)*(jjp-jj));
+        double nx=dx*(iip-ii)/dxy;
+        double ny=dy*(jjp-jj)/dxy;
+
+        double En=-(Ex*nx+Ey*ny);
+        double ep=m_field->arr[iip][jjp];
+        double ebound=0;
+
+        //pParams->arrMue[iip][jjp] * pParams->arrEx[iip][jjp] * pNe->arr[iip][jjp] - pParams->arrDe[iip][jjp]*(pNe->arr[iip][jjp]-pNe->arr[ii][jj])/dxy=0;
+        //mu*En*ep - d*(ep-ebound)/dxy=0;
+        ebound = ep - mu*En*ep*dxy/d;
+        m_maskValue[ii][jj]=m_maskValue[ii][jj]*0.98+0.02*ebound;//m_field->arr[iip][jjp];
+
+
+    }
 }
 
 solverPhi::~solverPhi()
@@ -220,7 +428,7 @@ solverPhi::~solverPhi()
 
 }
 
-solverPhi::solverPhi(simulationData* pData)
+solverPhi::solverPhi(simulationData* pData):simulationSolver(pData)
 {
     m_pData = pData;
     m_field = m_pData->getFieldPhi();
@@ -321,7 +529,7 @@ double solverPhi::solve(int iNumberIteration)
     return -1;
 }
 
-solverHeavySpicies::solverHeavySpicies(simulationData *pData, int num)
+solverHeavySpicies::solverHeavySpicies(simulationData *pData, int num):simulationSolver(pData)
 {
     m_pData = pData;
     m_field = m_pData->getFieldHeavySpicies(num);
@@ -329,6 +537,8 @@ solverHeavySpicies::solverHeavySpicies(simulationData *pData, int num)
     m_aNu = m_pData->getParameters()->arrDomega;
     m_aRHS = new double*[m_field ->cellsX];
     m_mask = m_pData->getParameters()->arrMaskHeavy;
+
+
     m_maskValue= m_pData->getParameters()->arrMaskHeavyValue;
     for (int i = 0; i < m_field ->cellsX; ++i) {
         m_aRHS[i] = new double [m_field ->cellsY];
@@ -367,6 +577,62 @@ double solverHeavySpicies::getRhs()
         }
     }
     return 1;
+}
+
+void solverHeavySpicies::setBc()
+{
+    for (int j = 0; j < m_field->cellsY; ++j)
+    {
+        m_field->arr[0][j] =0.0;// m_field->arr[m_field->cellsX-2][j];
+        m_field->arr[m_field->cellsX-1][j] =0.0;// m_field->arr[1][j];
+        m_field->arrPrev[0][j] =0.0;// m_field->arrPrev[m_field->cellsX-2][j];
+        m_field->arrPrev[m_field->cellsX-1][j] =0.0;// m_field->arrPrev[1][j];
+    }
+    for (int i = 0; i < m_field->cellsX; ++i)
+    {
+        m_field->arr[i][0] =0.0;// m_field->arr[i][m_field->cellsY-2];
+        m_field->arr[i][m_field->cellsY-1] = 0.0;//m_field->arr[i][1];
+        m_field->arrPrev[i][0] = 0.0;//= m_field->arrPrev[i][m_field->cellsY-2];
+        m_field->arrPrev[i][m_field->cellsY-1]= 0.0;// = m_field->arrPrev[i][1];
+    }
+    simulationData::simulationParameters* pParams = m_pData->getParameters();
+
+    double dx=m_pData->getDx();
+    double dy=m_pData->getDy();
+
+    simulationData::boundary* b= &(this->m_pData->getParameters()->bound);
+    for (int n=0; n<b->num; n++)
+    {
+        int ii=b->arrI[n];
+        int jj=b->arrJ[n];
+
+        int iip=b->arrI_inter[n];
+        int jjp=b->arrJ_inter[n];
+
+        m_maskValue[ii][jj]=m_field->arr[iip][jjp];
+
+        double d=pParams->arrDomega[iip][jjp];
+        double mu=-pParams->arrMuomega[iip][jjp];
+        double Ex=pParams->arrEx[iip][jjp];
+        double Ey=pParams->arrEy[iip][jjp];
+
+
+
+        double dxy=sqrt(dx*dx*(iip-ii)*(iip-ii) + dy*dy*(jjp-jj)*(jjp-jj));
+        double nx=dx*(iip-ii)/dxy;
+        double ny=dy*(jjp-jj)/dxy;
+
+        double En=-(Ex*nx+Ey*ny);
+        double ep=m_field->arr[iip][jjp];
+        double ebound=0;
+
+        //pParams->arrMue[iip][jjp] * pParams->arrEx[iip][jjp] * pNe->arr[iip][jjp] - pParams->arrDe[iip][jjp]*(pNe->arr[iip][jjp]-pNe->arr[ii][jj])/dxy=0;
+        //mu*En*ep - d*(ep-ebound)/dxy=0;
+        ebound = ep - mu*En*ep*dxy/d;
+        m_maskValue[ii][jj]=m_maskValue[ii][jj]*0.98+0.02*ebound;//m_field->arr[iip][jjp];
+
+
+    }
 }
 
 

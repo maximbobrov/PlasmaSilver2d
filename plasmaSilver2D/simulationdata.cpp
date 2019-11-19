@@ -211,6 +211,7 @@ void simulationData::simulationParameters::init(int iCellsX, int iCellsY)
     arrMaskHeavy = new double*[cellsX];
     arrMaskHeavyValue = new double*[cellsX];
     arrEps = new double*[cellsX];
+    arrBoundMask = new int*[cellsX];
 
     for (int i = 0; i < cellsX; ++i) {
         arrDe[i] = new double [cellsY];
@@ -232,8 +233,52 @@ void simulationData::simulationParameters::init(int iCellsX, int iCellsY)
         arrMaskHeavy[i] = new double[cellsY];
         arrMaskHeavyValue[i] = new double[cellsY];
         arrEps[i] = new double[cellsY];
+
+        arrBoundMask[i] = new int[cellsY];
     }
 
+    for (int i=0; i<cellsX; i++)
+    {
+        for (int j=0; j<cellsY; j++)
+        {
+
+            if((i >=  (cellsX-1) / 4  && i < 2*(cellsX-1)/4 && j >= (cellsY-1) / 4  && j < 2*(cellsY-1)/4))
+            {
+                arrMaskPhi[i][j] = 0.0;
+                arrMaskPhiValue[i][j] = -1500;
+            }
+            else
+            {
+                arrMaskPhi[i][j] = 1.0;
+                arrMaskPhiValue[i][j] =0.0;
+            }
+
+
+            if(((i >=  (cellsX-1) / 4  && i < 2*(cellsX-1)/4 && j >= (cellsY-1) / 4  && j < 2*(cellsY-1)/4)) || j <= (cellsY-1) / 4)
+            {
+               arrMaskNe[i][j] = 0.0;
+                arrMaskNeValue[i][j] = 1e5;
+                arrMaskEnergy[i][j] = 0.0;
+                arrMaskEnergyValue[i][j] = 1e5;
+               arrMaskHeavy[i][j] = 0.0;
+                arrMaskHeavyValue[i][j] = 1e-25;
+
+               arrBoundMask[i][j] = 0;
+            }
+            else
+            {
+                arrMaskNe[i][j] = 1.0;
+                arrMaskNeValue[i][j] =0.0;
+                arrMaskEnergy[i][j] = 1.0;
+                arrMaskEnergyValue[i][j] =0.0;
+                arrMaskHeavy[i][j] = 1.0;
+                arrMaskHeavyValue[i][j] =0.0;
+                arrBoundMask[i][j] = 1;
+            }
+        }
+    }
+
+    bound.init(cellsX,cellsY,arrBoundMask);
     T=400; //K
     p=101325;//pa
     mAr=39.948/1000.0;//kg/mol
@@ -262,8 +307,8 @@ void simulationData::updateParams()
             }
             else
             {
-               pParams->arrMaskPhi[i][j] = 1.0;
-               pParams->arrMaskPhiValue[i][j] =0.0;
+                pParams->arrMaskPhi[i][j] = 1.0;
+                pParams->arrMaskPhiValue[i][j] =0.0;
             }
             pParams->arrEps[i][j] = ( j >= (pParams->cellsY-1) / 4) ? 1.0 : 500.0;
 
@@ -275,6 +320,8 @@ void simulationData::updateParams()
                 pParams->arrMaskEnergyValue[i][j] = 1e5;
                 pParams->arrMaskHeavy[i][j] = 0.0;
                 pParams->arrMaskHeavyValue[i][j] = 1e-25;
+
+                pParams->arrBoundMask[i][j] = 0;
             }
             else
             {
@@ -284,6 +331,7 @@ void simulationData::updateParams()
                 pParams->arrMaskEnergyValue[i][j] =0.0;
                 pParams->arrMaskHeavy[i][j] = 1.0;
                 pParams->arrMaskHeavyValue[i][j] =0.0;
+                pParams->arrBoundMask[i][j] = 1;
             }
 
             pParams->arrMue[i][j] = 4e24/m_params->N; ; //4e4; m^2/(V*s)
@@ -310,4 +358,62 @@ void simulationData::updateParams()
 simulationData::simulationParameters::simulationParameters(int iCellsX, int iCellsY)
 {
     init(iCellsX,iCellsY);
+}
+
+simulationData::boundary::boundary()
+{
+    arrI=nullptr;
+}
+
+void simulationData::boundary::init(int cellsX, int cellsY, int **mask)
+{
+    if (arrI!=nullptr)
+    {
+        delete[] arrI;
+        delete[] arrJ;
+        delete[] arrI_inter;
+        delete[] arrJ_inter;
+    }
+
+    std::vector<int> ii;
+    std::vector<int> jj;
+
+    std::vector<int> ii_intern;
+    std::vector<int> jj_intern;
+
+
+    for (int i=1; i<cellsX-1; i++)
+    {
+        for (int j=1; j<cellsY-1; j++)
+        {
+            int grad_x=mask[i+1][j]-mask[i-1][j];
+            int grad_y=mask[i][j+1]-mask[i][j-1];
+
+            if ((grad_x*grad_x+grad_y*grad_y>0.1)&&(mask[i][j]==0))
+            {
+                ii.push_back(i);
+                jj.push_back(j);
+
+                ii_intern.push_back(i+grad_x);
+                jj_intern.push_back(j+grad_y);
+            }
+
+        }
+    }
+
+    num=ii.size();
+
+    arrI=new int[num];
+    arrJ=new int[num];
+    arrI_inter=new int[num];
+    arrJ_inter=new int[num];
+
+    for (int i=0;i<num;i++)
+    {
+        arrI[i]=ii[i];
+        arrJ[i]=jj[i];
+        arrI_inter[i]=ii_intern[i];
+        arrJ_inter[i]=jj_intern[i];
+    }
+
 }
