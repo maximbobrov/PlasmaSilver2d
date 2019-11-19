@@ -23,7 +23,16 @@ MainWindow::MainWindow(QWidget *parent)
     m_widget->setFixedWidth(900);
 
     m_widget->setObjectName("central");
-    glWidget = new GLWidget;
+
+    m_data = new simulationData(NX,NY);
+
+    m_data->setDx(1.0/NX);
+    m_data->setDy(0.3/NY);
+    m_data->setCellsXNumber(NX);
+    m_data->setCellsYNumber(NY);
+    m_data->setDt(1e-7);
+
+    glWidget = new GLWidget(this);
 
 
 
@@ -66,13 +75,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_grid->addWidget(m_scrollBar,5,2,1,1);
 
 
-    m_data = new simulationData(NX,NY);
 
-    m_data->setDx(1.0/NX);
-    m_data->setDy(0.3/NY);
-    m_data->setCellsXNumber(NX);
-    m_data->setCellsYNumber(NY);
-    m_data->setDt(1e-7);
 
     m_sNe = new solverNe(m_data);
     m_sEn = new solverEnergy(m_data);
@@ -95,9 +98,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_showPhiButton, SIGNAL(clicked(bool)), this, SLOT(setVisualArrPhi()));
     connect(m_showHeavyButton, SIGNAL(clicked(bool)), this, SLOT(setVisualArrHeavy()));
 
-
-
-
     m_widget->setLayout(m_grid);
     setCentralWidget(m_widget);
     setWindowTitle("PlasmaSolver");
@@ -114,7 +114,7 @@ MainWindow::~MainWindow()
 void MainWindow::replotGraph(int number)
 {
     simulationData::simulationParameters* pParams=m_data->getParameters();
-    glWidget->setField( m_visualArr , pParams->arrEps, NX, NY, m_data->getDx(), m_data->getDy(),m_scallingBar->value());
+    glWidget->setField(m_visualArr , pParams->arrEps, NX, NY, m_data->getDx(), m_data->getDy(),m_scallingBar->value());
 
     glWidget->repaint();//
 

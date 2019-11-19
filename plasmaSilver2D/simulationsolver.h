@@ -14,6 +14,7 @@ public:
     virtual double getRhs();
     virtual void getStepEuler();
     virtual void setBc();
+    virtual void updateMatrix();
     virtual double init(double value);
 
     virtual ~simulationSolver();
@@ -21,6 +22,12 @@ public:
 protected:
     simulationData* m_pData;
     simulationData::simulationField2d* m_field;
+    double** m_a;
+    double** m_bm;
+    double** m_bp;
+    double** m_cm;
+    double** m_cp;
+
     double** m_aRHS;
     double** m_aNu;
     double** m_mask;
@@ -32,7 +39,7 @@ class solverNe : public simulationSolver
 public:
     solverNe(simulationData* pData = nullptr);
     virtual double getRhs();
-
+    virtual void setBc();
     virtual ~solverNe();
 };
 
@@ -42,7 +49,7 @@ class solverEnergy : public simulationSolver
 public:
     solverEnergy(simulationData* pData = nullptr);
     virtual double getRhs();
-
+    virtual void setBc();
     virtual ~solverEnergy();
 };
 
@@ -65,7 +72,7 @@ class solverHeavySpicies : public simulationSolver
 public:
     solverHeavySpicies(simulationData* pData = nullptr, int num = 0);
     virtual double getRhs();
-
+    virtual void setBc();
 
     virtual ~solverHeavySpicies();
 private:

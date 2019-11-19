@@ -36,6 +36,20 @@ public:
         private: void init(int cellsNumber, char* name);
     };
 
+    struct boundary
+    {
+        int num;
+        int* arrI;
+        int* arrJ;
+        int* arrI_inter;
+        int* arrJ_inter;
+
+        boundary();
+        void init(int cellsX, int cellsY, int** mask);
+
+    };
+
+
     struct simulationField2d
     {
         char* name;
@@ -67,7 +81,10 @@ public:
         double** arrMaskEnergyValue;
         double** arrMaskHeavy;
         double** arrMaskHeavyValue;
+        int ** arrBoundMask;
         double** arrEps;
+
+        boundary bound;
         int cellsX;
         int cellsY;
         double rho; //mixture density
