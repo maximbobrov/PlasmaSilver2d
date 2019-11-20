@@ -13,6 +13,8 @@
 #include <QCheckBox>
 #include <QProgressBar>
 #include "glwidget.h"
+#include <QComboBox>
+#include <QFrame>
 
 #include "simulationdata.h"
 #include "simulationsolver.h"
@@ -47,36 +49,41 @@ public slots:
     void simulateData(bool);
     void stopAnim(bool);
     void replotGraph(int);
-    void setFields(int);
-    void setVisualArrNe();
-    void setVisualArrEnergy();
-    void setVisualArrPhi();
-    void setVisualArrHeavy();
+    void setFields();
+    void setVisualArr(const QString &text);
 
 
 private:
     QWidget* m_widget;
     GLWidget *glWidget;
     QCustomPlot* m_customPlot;
+
     QGridLayout* m_grid;
-    QVBoxLayout* m_vLayoutCheckBoxes;
-    QHBoxLayout* m_hLayout;
-    QHBoxLayout* m_hLayoutButton;
+
+    QGridLayout* m_visualGrid;
+    QGridLayout* m_settingGrid;
+
+    QGridLayout* m_simulSettingGrid;
+    QGridLayout* m_visualSettingGrid;
+
+    QPushButton* m_simulateButton;
+    QPushButton* m_stopButton;
+    QPushButton* m_initButton;
+
     QLineEdit* m_textStartTime;
     QLineEdit* m_textEndTime;
     QLineEdit* m_textDeltaTime;
-    QScrollBar* m_scrollBar;
+
+    QLabel* m_timeLabel;
+    QProgressBar* m_progressBar;
+
+
+    QComboBox* m_fieldsComboBox;
+    QScrollBar* m_timeScrollBar;
     QScrollBar* m_scallingBar;
     QScrollBar* m_crossBar;
-    QVector<QCheckBox*> m_checkBoxes;
-    QProgressBar* m_progressBar;
-    QPushButton* m_simulateButton;
-    QPushButton* m_stopButton;
 
-    QPushButton* m_showNeButton;
-    QPushButton* m_showEnergyButton;
-    QPushButton* m_showHeavyButton;
-    QPushButton* m_showPhiButton;
+
 
     simulationData* m_data;
     solverNe* m_sNe;
@@ -88,6 +95,7 @@ private:
     simulationData::simulationField2d* m_fEnergy;
     simulationData::simulationField2d* m_fPhi;
     QVector<simulationData::simulationField2d*> m_fHeavy;
+    simulationData::simulationParameters* m_pParam;
 
     QVector<plotStruct> m_plots;
     QVector<storeStruct> m_storage;
@@ -97,6 +105,7 @@ private:
     double m_time;
     double** m_visualArr;
     QString m_visualArrName;
+    bool m_initiolized;
 
 private:
     void saveInStorage();

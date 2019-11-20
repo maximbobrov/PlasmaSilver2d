@@ -150,9 +150,6 @@ void GLWidget::paintGL()
             glBegin(GL_TRIANGLE_STRIP);
             for (int j=0;j<N_Y;j++)
             {
-                l_21=sc*(arr[i][j] - min)/(max - min+ 1e-20 );
-                l_22=sc*(arr[i+1][j]- min)/(max - min + 1e-20);
-
                 get_color(sc*arr[i][j],min,max);
                 glVertex2f(dx*(i-N_X/2),dy*(j-N_Y/2));
 

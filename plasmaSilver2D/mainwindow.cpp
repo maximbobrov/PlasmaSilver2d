@@ -20,59 +20,102 @@ MainWindow::MainWindow(QWidget *parent)
     m_widget=new QWidget();
 
     m_widget->setObjectName("central");
-     m_widget->setMinimumSize(900,700);
-    glWidget = new GLWidget;
+    m_widget->setMinimumSize(1000,700);
 
+
+
+    m_grid = new QGridLayout(this);
+    m_visualGrid = new QGridLayout(this);
+    m_settingGrid = new QGridLayout(this);
+
+
+    m_simulSettingGrid = new QGridLayout(this);
+    m_visualSettingGrid = new QGridLayout(this);
+
+    m_grid->addLayout(m_settingGrid,0,0,3,1);
+    m_grid->addLayout(m_visualGrid,0,1,3,3);
+
+
+    QFrame *lineSim = new QFrame(this);
+    lineSim->setFrameShape(QFrame::Box);
+    lineSim->setFrameShadow(QFrame::Sunken);
+
+    QFrame *lineVis = new QFrame(this);
+    lineVis->setFrameShape(QFrame::Box);
+    lineVis->setFrameShadow(QFrame::Sunken);
+
+    QFont font;
+    font.setWeight(QFont::Bold);
+    font.setPixelSize(12);
+
+    QLabel * simLabel = new QLabel("Simulation settings");
+    simLabel->setAlignment(Qt::AlignCenter);
+    simLabel->setFont(font);
+
+    QLabel * visLabel = new QLabel("Visualize settings");
+    visLabel->setAlignment(Qt::AlignCenter);
+    visLabel->setFont(font);
+
+    m_settingGrid->addWidget(lineSim                                    , 0, 0, 6, 20);
+    m_settingGrid->addWidget(simLabel                                   , 0, 1, 1, 18);
+    m_settingGrid->addLayout(m_simulSettingGrid                         , 1, 1, 5, 18);
+    m_settingGrid->addWidget(lineVis                                    , 7, 0, 6, 20);
+    m_settingGrid->addWidget(visLabel                                   , 7, 1, 1, 18);
+    m_settingGrid->addLayout(m_visualSettingGrid                        , 8, 1, 5, 18);
+
+
+    m_timeScrollBar = new QScrollBar(Qt::Horizontal,this);
+    m_scallingBar = new QScrollBar(Qt::Horizontal,this);
+    m_crossBar = new QScrollBar(Qt::Horizontal,this);
+    m_fieldsComboBox = new QComboBox(this);
+
+
+    m_visualSettingGrid->addWidget(new QLabel("Visualized field:")        , 0, 0, 1, 3);
+    m_visualSettingGrid->addWidget(m_fieldsComboBox                       , 1, 0, 1, 3);
+    m_visualSettingGrid->addWidget(new QLabel("Time:")                    , 2, 0, 1, 3);
+    m_visualSettingGrid->addWidget(m_timeScrollBar                        , 3, 0, 1, 3);
+    m_visualSettingGrid->addWidget(new QLabel("Scalling:")                , 4, 0, 1, 3);
+    m_visualSettingGrid->addWidget(m_scallingBar                          , 5, 0, 1, 3);
+    m_visualSettingGrid->addWidget(new QLabel("Cross section coordinate:"), 6, 0, 1, 3);
+    m_visualSettingGrid->addWidget(m_crossBar                             , 7, 0, 1, 3);
+    m_visualSettingGrid->setAlignment(Qt::AlignTop);
+
+
+    m_textStartTime = new QLineEdit(this);
+    m_textStartTime->setMaximumWidth(65);
+    m_textDeltaTime = new QLineEdit(this);
+    m_textDeltaTime->setMaximumWidth(65);
+    m_textEndTime =   new QLineEdit(this);
+    m_textEndTime->setMaximumWidth(65);
+
+    m_simulateButton = new QPushButton("Simulate");
+    m_stopButton = new QPushButton("Stop");
+    m_initButton = new QPushButton("Init");
+    m_progressBar = new QProgressBar(this);
+    m_timeLabel = new QLabel("Progress:");
+    m_progressBar->setRange(0,100);
+
+
+    m_simulSettingGrid->addWidget(new QLabel("Start time:")            , 0, 0, 1, 2);
+    m_simulSettingGrid->addWidget(m_textStartTime                      , 1, 0, 1, 2);
+    m_simulSettingGrid->addWidget(new QLabel("dt:")                    , 0, 2, 1, 2);
+    m_simulSettingGrid->addWidget(m_textDeltaTime                      , 1, 2, 1, 2);
+    m_simulSettingGrid->addWidget(new QLabel("End time:")              , 0, 4, 1, 2);
+    m_simulSettingGrid->addWidget(m_textEndTime                        , 1, 4, 1, 2);
+    m_simulSettingGrid->addWidget(m_simulateButton                     , 2, 0, 1, 2);
+    m_simulSettingGrid->addWidget(m_stopButton                         , 2, 2, 1, 2);
+    m_simulSettingGrid->addWidget(m_initButton                         , 2, 4, 1, 2);
+    m_simulSettingGrid->addWidget(new QLabel(" ")                      , 3, 0, 1, 6);
+    m_simulSettingGrid->addWidget(m_timeLabel                          , 4, 0, 1, 6);
+    m_simulSettingGrid->addWidget(m_progressBar                        , 5, 0, 1, 6);
+    m_simulSettingGrid->setAlignment(Qt::AlignTop);
 
 
     m_customPlot = new QCustomPlot(this);
-    m_grid = new QGridLayout(this);
-    m_vLayoutCheckBoxes = new QVBoxLayout(this);
-    m_hLayout = new QHBoxLayout(this);
-    m_hLayoutButton = new QHBoxLayout(this);
-    m_textStartTime = new QLineEdit(this);
-    m_textDeltaTime = new QLineEdit(this);
-    m_textEndTime =   new QLineEdit(this);
-    m_scrollBar = new QScrollBar(Qt::Horizontal,this);
-    m_scallingBar = new QScrollBar(Qt::Horizontal,this);
-    m_crossBar = new QScrollBar(Qt::Vertical,this);
-    m_simulateButton = new QPushButton("Simulate");
-    m_stopButton = new QPushButton("Stop");
+    glWidget = new GLWidget;
+    m_visualGrid->addWidget(glWidget,0,0,2,2);
+    m_visualGrid->addWidget(m_customPlot,2,0,2,2);
 
-    m_progressBar = new QProgressBar(this);
-    m_progressBar->setRange(0,100);
-
-    m_showNeButton = new QPushButton("Show Ne");
-    m_showEnergyButton = new QPushButton("Show Energy");
-    m_showHeavyButton = new QPushButton("Show Heavy Spicies");
-    m_showPhiButton = new QPushButton("Show Phi");
-
-    m_vLayoutCheckBoxes->addWidget(m_crossBar);
-    m_vLayoutCheckBoxes->addWidget(m_showNeButton);
-    m_vLayoutCheckBoxes->addWidget(m_showEnergyButton);
-    m_vLayoutCheckBoxes->addWidget(m_showPhiButton);
-    m_vLayoutCheckBoxes->addWidget(m_showHeavyButton);
-
-
-    m_grid->addWidget(m_customPlot,0,0,2,3);
-    m_grid->addWidget(glWidget,2,0,2,3);
-    m_grid->addLayout(m_vLayoutCheckBoxes,2,3,2,1);
-
-    m_hLayout->addWidget(new QLabel("Start time:"));
-    m_hLayout->addWidget(m_textStartTime);
-    m_hLayout->addWidget(new QLabel("dt:"));
-    m_hLayout->addWidget(m_textDeltaTime);
-    m_hLayout->addWidget(new QLabel("End time:"));
-    m_hLayout->addWidget(m_textEndTime);
-    m_grid->addLayout(m_hLayout,5,0,1,2);
-
-    m_hLayoutButton->addWidget(m_simulateButton);
-    m_hLayoutButton->addWidget(m_progressBar);
-    m_hLayoutButton->addWidget(m_stopButton);
-    m_grid->addLayout(m_hLayoutButton,6,0,1,2);
-
-    m_grid->addWidget(m_scrollBar,5,2,1,1);
-    m_grid->addWidget(m_scallingBar,6,2,1,1);
 
 
     m_data = new simulationData(NX,NY);
@@ -103,21 +146,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect (m_simulateButton, SIGNAL(clicked(bool)), this, SLOT(simulateData(bool)));
     connect (m_stopButton, SIGNAL(clicked(bool)), this, SLOT(stopAnim(bool)));
-    connect(m_scrollBar, SIGNAL(valueChanged(int)), this, SLOT(replotGraph(int)));
-    connect(m_scallingBar, SIGNAL(valueChanged(int)), this, SLOT(setFields(int)));
-    connect(m_crossBar, SIGNAL(valueChanged(int)), this, SLOT(setFields(int)));
-
-
-    connect(m_showNeButton, SIGNAL(clicked(bool)), this, SLOT(setVisualArrNe()));
-    connect(m_showEnergyButton, SIGNAL(clicked(bool)), this, SLOT(setVisualArrEnergy()));
-    connect(m_showPhiButton, SIGNAL(clicked(bool)), this, SLOT(setVisualArrPhi()));
-    connect(m_showHeavyButton, SIGNAL(clicked(bool)), this, SLOT(setVisualArrHeavy()));
-
-
-
+    connect (m_initButton, SIGNAL(clicked(bool)), this, SLOT(initData()));
+    connect(m_timeScrollBar, SIGNAL(valueChanged(int)), this, SLOT(replotGraph(int)));
+    connect(m_scallingBar, SIGNAL(valueChanged(int)), this, SLOT(setFields()));
+    connect(m_crossBar, SIGNAL(valueChanged(int)), this, SLOT(setFields()));
+    connect(m_fieldsComboBox, SIGNAL(currentIndexChanged(const QString)), this, SLOT(setVisualArr(const QString)));
 
     m_widget->setLayout(m_grid);
-
     setCentralWidget(m_widget);
     setWindowTitle("PlasmaSolver");
     m_animStopped=true;
@@ -129,16 +164,14 @@ MainWindow::~MainWindow()
 
 }
 
-void MainWindow::setFields(int number)
+void MainWindow::setFields()
 {
     replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
 }
 
 void MainWindow::replotGraph(int number)
 {
-    simulationData::simulationParameters* pParams=m_data->getParameters();
-
-    m_simulateButton->setText("Simulate (time = " + QString().number(m_storage[number].time)+")");
+    m_timeLabel->setText("Progress(time = " + QString().number(m_storage[number].time)+"):");
 
     m_maxY=-1e30;
     m_minY=+1e30;
@@ -160,7 +193,7 @@ void MainWindow::replotGraph(int number)
                 for (int jj = 0; jj < NY; ++jj)
                     m_visualArr[ii][jj] = m_plots[j].arr[ii][jj];
 
-            glWidget->setField( m_visualArr , pParams->arrEps ,pParams->arrMaskPhi, NX, NY, m_data->getDx(), m_data->getDy(), NY-1-m_crossBar->value(), m_scallingBar->value());
+            glWidget->setField( m_visualArr , m_pParam->arrEps , m_pParam->arrMaskPhi, NX, NY, m_data->getDx(), m_data->getDy(), m_crossBar->value(), m_scallingBar->value());
             glWidget->repaint();
 
             m_customPlot->addGraph();
@@ -169,7 +202,7 @@ void MainWindow::replotGraph(int number)
             for (int i = 0; i < NX; ++i)
             {
                 x[i] = i / (NX * 1.0 / 2)-1;
-                y[i] = m_plots[j].arr[i][(int)(NY-1-m_crossBar->value())];
+                y[i] = m_plots[j].arr[i][(int)(m_crossBar->value())];
                 if(y[i] > m_maxY)
                     m_maxY = y[i];
                 if(y[i] < m_minY)
@@ -181,21 +214,11 @@ void MainWindow::replotGraph(int number)
             graphPen.setColor(colors[0]);
             graphPen.setWidthF(2);
             m_customPlot->graph(0)->setPen(graphPen);
-            /*for (int i=0; i < m_plots[j].size; ++i)
-            {
-                if(m_plots[j].y[i] > m_maxY)
-                    m_maxY = m_plots[j].y[i];
-                if(m_plots[j].y[i] < m_minY)
-                    m_minY = m_plots[j].y[i];
-            }*/
-
             m_customPlot->xAxis->setRange(-1, 1);
             m_customPlot->yAxis->setRange(m_minY, m_maxY);
             m_customPlot->legend->setVisible(true);
             m_customPlot->replot();
         }
-
-
     }
 }
 
@@ -219,6 +242,7 @@ void MainWindow::saveInStorage()
 
 void MainWindow::addPlot(double **arr, char *name, double scale)
 {
+    m_fieldsComboBox->addItem(QString(name));
     plotStruct plot;
     for (int i = 0; i < NX; ++i)
     {
@@ -230,66 +254,76 @@ void MainWindow::addPlot(double **arr, char *name, double scale)
     plot.arrRef = arr;
     plot.name = name;
     plot.scale = scale;
-
     m_plots.push_back(plot);
 }
 
 void MainWindow::initData()
 {
-    m_fNe = m_data->getFieldNe();
-    m_fEnergy = m_data->getFieldEnergy();
-    m_fPhi = m_data->getFieldPhi();
-    m_numberHeavySpicies = m_data->getNumberHeavySpicies();
-    m_time = 0.0;
-    for (int j = 0; j < m_numberHeavySpicies; ++j)
-    {
-        m_fHeavy.push_back(m_data->getFieldHeavySpicies(j));
-        m_sHeavy.push_back(new solverHeavySpicies(m_data, j));
-    }
+    m_initiolized = false;
 
-    simulationData::simulationParameters* pParams=m_data->getParameters();
-    m_sPhi->init(0.0);
-    for (int i = 0; i < NX; ++i)
+    //////INIT FIELDS AND VARIABLES
     {
-        for (int j = 0; j < NY; ++j)
+
+        m_pParam =m_data->getParameters();
+        m_fNe = m_data->getFieldNe();
+        m_fEnergy = m_data->getFieldEnergy();
+        m_fPhi = m_data->getFieldPhi();
+        m_numberHeavySpicies = m_data->getNumberHeavySpicies();
+        m_time = 0.0;
+        for (int j = 0; j < m_numberHeavySpicies; ++j)
         {
-            double x=(i-3*NX/4)*m_data->getDx();
-            double y=(j-NY/2)*m_data->getDy();
-            double r=x*x+y*y;
-            m_fNe->arr[i][j] = 1e5 + 1e11*simulationTools::gauss(sqrt(x*x+y*y), NY*m_data->getDy()*0.1);
-            m_fNe->arrPrev[i][j] =m_fNe->arr[i][j];
-            m_fEnergy->arr[i][j] = 0.01*m_fNe->arr[i][j];
-            m_fEnergy->arrPrev[i][j] = m_fEnergy->arr[i][j];
-            for (int h = 0; h < m_numberHeavySpicies; ++h)
+            m_fHeavy.push_back(m_data->getFieldHeavySpicies(j));
+            m_sHeavy.push_back(new solverHeavySpicies(m_data, j));
+        }
+
+        m_sPhi->init(0.0);
+        for (int i = 0; i < NX; ++i)
+        {
+            for (int j = 0; j < NY; ++j)
             {
-                m_fHeavy[h]->arr[i][j] =(m_fNe->arr[i][j]*pParams->T*8.314)/(pParams->p*6.022e23);
-                m_fHeavy[h]->arrPrev[i][j] = m_fHeavy[h]->arr[i][j];
+                double x=(i-3*NX/4)*m_data->getDx();
+                double y=(j-NY/2)*m_data->getDy();
+                double r=x*x+y*y;
+                m_fNe->arr[i][j] = 1e5 + 1e11*simulationTools::gauss(sqrt(x*x+y*y), NY*m_data->getDy()*0.1);
+                m_fNe->arrPrev[i][j] =m_fNe->arr[i][j];
+                m_fEnergy->arr[i][j] = 0.01*m_fNe->arr[i][j];
+                m_fEnergy->arrPrev[i][j] = m_fEnergy->arr[i][j];
+                for (int h = 0; h < m_numberHeavySpicies; ++h)
+                {
+                    m_fHeavy[h]->arr[i][j] =(m_fNe->arr[i][j] * m_pParam->T*8.314)/(m_pParam->p*6.022e23);
+                    m_fHeavy[h]->arrPrev[i][j] = m_fHeavy[h]->arr[i][j];
+                }
             }
         }
+        m_data->updateParams();
+        m_sPhi->solve(20);
     }
 
-    m_data->updateParams();
-    m_visualArrName = m_fNe->name;
 
-    m_plots.clear();
-
-    addPlot(m_fNe->arr, m_fNe->name);
-    addPlot(pParams->arrTe, m_fEnergy->name);
-    addPlot(m_fPhi->arr, m_fPhi->name);
-    for (int j = 0; j < m_numberHeavySpicies; ++j)
+    //////INIT GUI
     {
-        addPlot(m_fHeavy[j]->arr, m_fHeavy[j]->name);
+        m_plots.clear();
+        m_fieldsComboBox->clear();
+        m_storage.clear();
+        m_progressBar->setValue(0.0);
+        m_timeScrollBar->setRange(0,0);
+        m_visualArrName = m_fNe->name;
+
+        addPlot(m_fNe->arr, m_fNe->name);
+        addPlot(m_pParam->arrTe, m_fEnergy->name);
+        addPlot(m_fPhi->arr, m_fPhi->name);
+        for (int j = 0; j < m_numberHeavySpicies; ++j)
+        {
+            addPlot(m_fHeavy[j]->arr, m_fHeavy[j]->name);
+        }
+        saveInStorage();
+        replotGraph(0);
     }
-    m_scrollBar->setRange(0,0);
-    m_storage.clear();
-    saveInStorage();
-    replotGraph(0);
-    m_sPhi->solve(20);
+    m_initiolized = true;
 }
 
 void MainWindow::updateData(int numberIt)
 {
-
     for (int i = 0; i < numberIt; ++i)
     {
         m_data->updateParams();
@@ -311,26 +345,24 @@ void MainWindow::updateData(int numberIt)
             m_sHeavy[j]->getStepEuler();
         }
     }
-
 }
 
 void MainWindow::simulateData(bool status)
 {
     m_animStopped=false;
-    while(!m_animStopped &&  m_time <= (m_textEndTime->text().toDouble() - m_textStartTime->text().toDouble()))
+    int saveNum = (m_textEndTime->text().toDouble() - m_textStartTime->text().toDouble()) / m_textDeltaTime->text().toDouble();
+    if(saveNum< 20)
+        saveNum = 1;
+    else
+        saveNum = saveNum * 1.0 / 20.0;
+    while(!m_animStopped &&  m_time < (m_textEndTime->text().toDouble() - m_textStartTime->text().toDouble()) - saveNum * m_textDeltaTime->text().toDouble())
     {
-        int saveNum = (m_textEndTime->text().toDouble() - m_textStartTime->text().toDouble()) / m_textDeltaTime->text().toDouble();
-        if(saveNum< 20)
-            saveNum = 1;
-        else
-            saveNum = saveNum / 20;
         m_time += m_textStartTime->text().toDouble() + saveNum * m_textDeltaTime->text().toDouble();
         updateData(saveNum);
 
         saveInStorage();
-        m_scrollBar->setRange(0, m_storage.size() - 1);
-        m_scrollBar->setValue(m_storage.size() - 1);
-        m_simulateButton->setText("Simulate (time = " + QString().number(m_time)+")");
+        m_timeScrollBar->setRange(0, m_storage.size() - 1);
+        m_timeScrollBar->setValue(m_storage.size() - 1);
         replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
         QCoreApplication::processEvents();
 
@@ -345,25 +377,13 @@ void MainWindow::stopAnim(bool)
     m_animStopped=true;
 }
 
-void MainWindow::setVisualArrNe()
+void MainWindow::setVisualArr(const QString &text)
 {
-    m_visualArrName = m_fNe->name;
-    replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
-}
-void MainWindow::setVisualArrEnergy()
-{
-    m_visualArrName = m_fEnergy->name;
-    replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
-}
-void MainWindow::setVisualArrPhi()
-{
-    m_visualArrName = m_fPhi->name;
-    replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
-}
-void MainWindow::setVisualArrHeavy()
-{
-    m_visualArrName = m_fHeavy[0]->name;
-    replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
+    if(m_initiolized)
+    {
+        m_visualArrName = text;
+        replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
+    }
 }
 
 
