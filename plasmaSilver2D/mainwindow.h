@@ -31,9 +31,11 @@ public:
     ~MainWindow();
 
     struct plotStruct{
-        double arr[NX][NY];
+        double **arr;
         double **arrRef;
         QString name;
+        double max;
+        double min;
         double scale;
         bool visible;
     };
@@ -103,7 +105,6 @@ private:
     bool m_animStopped;
     double m_startTime,m_endTime;
     double m_time;
-    double** m_visualArr;
     QString m_visualArrName;
     bool m_initiolized;
 

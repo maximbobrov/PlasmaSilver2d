@@ -447,7 +447,6 @@ double solverPhi::getRhs()
     double q_over_eps0=q_e/eps_0;
 
     double** pNe = m_pData->getFieldNe()->arr;
-    double** pArp = m_pData->getFieldHeavySpicies(0)->arr;
 
     double mult= (pParams->p*6.022e23)/(pParams->T*8.314);
     double dx = m_pData->getDx();

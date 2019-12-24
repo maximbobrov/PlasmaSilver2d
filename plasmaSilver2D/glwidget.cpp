@@ -31,12 +31,9 @@ void GLWidget::draw_text(double x, double y, double z, QString txt)
 {
     glDisable(GL_LIGHTING);
     glDisable(GL_FOG);
-    //glDisable(GL_DEPTH_TEST);
-    //qglColor(Qt::white);
     glColor3f(1,1,1);
 
-    renderText(x, y, z, txt, QFont("Arial", 10, 0/*QFont::Bold*/, false) );
-    //glEnable(GL_DEPTH_TEST);
+    renderText(x, y, z, txt, QFont("Arial", 10, 0, false) );
     glEnable(GL_LIGHTING);
 }
 
@@ -53,14 +50,14 @@ XYZ GLWidget::get_color(double gval, double min, double max)
     XYZ col_table[5];
     XYZ res;
 
-    col_table[0].x=0.0; col_table[0].y=0.0; col_table[0].z=1.0;
-    col_table[1].x=0.0; col_table[1].y=1.0; col_table[1].z=1.0;
-    col_table[2].x=0.0; col_table[2].y=1.0; col_table[2].z=0.0;
-    col_table[3].x=1.0; col_table[3].y=1.0; col_table[3].z=0.0;
-    col_table[4].x=1.0; col_table[4].y=0.0; col_table[4].z=0.0;
+    col_table[0].x = 0.0; col_table[0].y = 0.0; col_table[0].z = 1.0;
+    col_table[1].x = 0.0; col_table[1].y = 1.0; col_table[1].z = 1.0;
+    col_table[2].x = 0.0; col_table[2].y = 1.0; col_table[2].z = 0.0;
+    col_table[3].x = 1.0; col_table[3].y = 1.0; col_table[3].z = 0.0;
+    col_table[4].x = 1.0; col_table[4].y = 0.0; col_table[4].z = 0.0;
 
     double alpha;
-    if ((max-min)>1e-25)
+    if ((max-min) > 1e-35)
     {
         alpha=(val-min)/(max-min)*nn;
         i=(int)(alpha);
@@ -71,10 +68,9 @@ XYZ GLWidget::get_color(double gval, double min, double max)
         alpha=0.0;
         i=2;
     }
-    res.x=col_table[i].x*(1-alpha)+col_table[i+1].x*alpha;
-    res.y=col_table[i].y*(1-alpha)+col_table[i+1].y*alpha;
-    res.z=col_table[i].z*(1-alpha)+col_table[i+1].z*alpha;
-
+    res.x = col_table[i].x * (1 - alpha) + col_table[i+1].x * alpha;
+    res.y = col_table[i].y * (1 - alpha) + col_table[i+1].y * alpha;
+    res.z = col_table[i].z * (1 - alpha) + col_table[i+1].z * alpha;
 
     glColor3f(res.x,res.y,res.z);
     return res;
@@ -105,27 +101,20 @@ void GLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glLoadIdentity();
-    //glPushMatrix();
     glScalef(4,4,4);
     glDisable(GL_FOG);
 
 
-    //glPopMatrix();
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_FOG);
-    //glDisable(GL_LINE_SMOOTH);
     glDisable(GL_LIGHTING);
-
-    //glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 
     int n=20;
 
     if(arr!=nullptr)
     {
-
-        double l_21,l_22;
-        double max = 1e-25;
-        double min = 1e25;
+        double max = 1e-35;
+        double min = 1e35;
         glColor3f(1,1,1);
 
         for (int i=0;i<N_X;i++)
@@ -217,27 +206,16 @@ void GLWidget::paintGL()
 
 
     glEnable(GL_DEPTH_TEST);
-    //glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-
-
 
 
 }
 
 void GLWidget::resizeGL(int w, int h)
 {
-
-
     glClearColor (0.0, 0.0, 0.0, 0.0);
-
-    /* set fill color to white */
     glColor3f(1.0, 1.0, 1.0);
 
     glViewport(0,0,w,h);
-
-    /* set up standard orthogonal view with clipping */
-    /* box as cube of side 2 centered at origin */
-    /* This is default view and these statement could be removed */
     glMatrixMode (GL_PROJECTION);
     glLoadIdentity ();
     glOrtho(-w*1.0/h, w*1.0/h, -1.0, 1.0, -150.5, 150.5);
@@ -250,6 +228,4 @@ void GLWidget::resizeGL(int w, int h)
 
     glEnable(GL_FOG);
     glEnable(GL_DEPTH_TEST);
-
-
 }

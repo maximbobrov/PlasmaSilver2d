@@ -2,7 +2,7 @@
 #include "simulationdata.h"
 #include <QDebug>
 
-static const int g_EAr_EAr_num =67;
+/*static const int g_EAr_EAr_num =67;
 
 static  double g_EAr_EAr[g_EAr_EAr_num][2] = {
     #include "reactions/e+Ar_e+Ar.txt"
@@ -24,7 +24,7 @@ static const int g_EArs_2EArp_num =20;
 
 static double g_EArs_2EArp[g_EArs_2EArp_num][2] = {
     #include "reactions/e+Ars_2e+Ar+.txt"
-};
+};*/
 
 
 static const int comsol_EAr_2EArp_num =101;
@@ -33,6 +33,23 @@ static double comsol_EAr_2EArp[comsol_EAr_2EArp_num][2] = {
     #include "comsol/e+Ar_2e+Ar+.txt"
 };
 
+static const int comsol_EAr_EAr_num =201;
+
+static double comsol_EAr_EAr[comsol_EAr_EAr_num][2] = {
+    #include "comsol/e+Ar_e+Ar.txt"
+};
+
+static const int comsol_EAr_EArs_num =201;
+
+static double comsol_EAr_EArs[comsol_EAr_EArs_num][2] = {
+    #include "comsol/e+Ar_e+Ars.txt"
+};
+
+static const int comsol_EArs_2EArp_num =201;
+
+static double comsol_EArs_2EArp[comsol_EArs_2EArp_num][2] = {
+    #include "comsol/e+Ars_2e+Ar+.txt"
+};
 
 
 
@@ -73,7 +90,7 @@ double** reaction::getR()
     return m_R;
 }
 
-reactionEAr_EAr::reactionEAr_EAr(simulationData *data):reaction(data)
+/*reactionEAr_EAr::reactionEAr_EAr(simulationData *data):reaction(data)
 {
     if (data != nullptr)
     {
@@ -187,7 +204,7 @@ void reactionEArs_2EArp::calc()
           //m_cs->getSpline(En[i])*N*Ars[i]*Ne[i]*0.0;
         }
     }
-}
+}*/
 
 reactionEAr_2EArp_comsol::reactionEAr_2EArp_comsol(simulationData *data):reaction(data)
 {
@@ -213,6 +230,90 @@ void reactionEAr_2EArp_comsol::calc()
 }
 
 double reactionEAr_2EArp_comsol::getDe()
+{
+    return m_energy;
+}
+
+reactionEAr_EAr_comsol::reactionEAr_EAr_comsol(simulationData *data):reaction(data)
+{
+    if (data != nullptr)
+    {
+        m_spline=new splineInterp(20);
+
+        m_spline->fillData(comsol_EAr_EAr,comsol_EAr_EAr_num);
+        //m_cs->fillSigmas2(g_EArs_2EArp,g_EArs_2EArp_num);
+    }
+}
+
+void reactionEAr_EAr_comsol::calc()
+{
+    double ** arrTe = m_pData->getArrTe();
+    for (int i=0;i<m_pData->getCellsXNumber();i++)
+    {
+        for (int j=0;j<m_pData->getCellsYNumber();j++)
+        {
+         m_R[i][j] =m_pData->getFieldNe()->arr[i][j]*0.0000001*m_spline->getSpline(arrTe[i][j]);//i*100.0/m_pData->getCellsNumber());
+        }
+    }
+}
+
+double reactionEAr_EAr_comsol::getDe()
+{
+    return m_energy;
+}
+
+reactionEAr_EArs_comsol::reactionEAr_EArs_comsol(simulationData *data):reaction(data)
+{
+    if (data != nullptr)
+    {
+        m_spline=new splineInterp(20);
+
+        m_spline->fillData(comsol_EAr_EArs,comsol_EAr_EArs_num);
+        //m_cs->fillSigmas2(g_EArs_2EArp,g_EArs_2EArp_num);
+    }
+}
+
+void reactionEAr_EArs_comsol::calc()
+{
+    double ** arrTe = m_pData->getArrTe();
+    for (int i=0;i<m_pData->getCellsXNumber();i++)
+    {
+        for (int j=0;j<m_pData->getCellsYNumber();j++)
+        {
+         m_R[i][j] =m_pData->getFieldNe()->arr[i][j]*0.0000001*m_spline->getSpline(arrTe[i][j]);//i*100.0/m_pData->getCellsNumber());
+        }
+    }
+}
+
+double reactionEAr_EArs_comsol::getDe()
+{
+    return m_energy;
+}
+
+reactionEArs_2EArp_comsol::reactionEArs_2EArp_comsol(simulationData *data):reaction(data)
+{
+    if (data != nullptr)
+    {
+        m_spline=new splineInterp(20);
+
+        m_spline->fillData(comsol_EArs_2EArp,comsol_EArs_2EArp_num);
+        //m_cs->fillSigmas2(g_EArs_2EArp,g_EArs_2EArp_num);
+    }
+}
+
+void reactionEArs_2EArp_comsol::calc()
+{
+    double ** arrTe = m_pData->getArrTe();
+    for (int i=0;i<m_pData->getCellsXNumber();i++)
+    {
+        for (int j=0;j<m_pData->getCellsYNumber();j++)
+        {
+         m_R[i][j] =m_pData->getFieldNe()->arr[i][j]*0.0000001*m_spline->getSpline(arrTe[i][j]);//i*100.0/m_pData->getCellsNumber());
+        }
+    }
+}
+
+double reactionEArs_2EArp_comsol::getDe()
 {
     return m_energy;
 }

@@ -19,11 +19,10 @@ public:
 
     enum ReactionName
     {
-       eAr_eAr,
-       eAr_eArs,
-       eAr_2eArp,
-       eArs_2eArp,
-        comsol_eAr_2eArp
+       comsol_eAr_eAr,
+       comsol_eAr_eArs,
+       comsol_eAr_2eArp,
+       comsol_eArs_2eArp
     };
 
     struct simulationField

@@ -54,6 +54,9 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 DISTFILES += \
+    comsol/e+Ar_e+Ar.txt \
+    comsol/e+Ar_e+Ars.txt \
+    comsol/e+Ars_2e+Ar+.txt \
     reactions/e+Ar_2e+Ar+.txt \
     reactions/e+Ar_e+Ar.txt \
     reactions/e+Ar_e+Ars.txt \

@@ -20,21 +20,17 @@ MainWindow::MainWindow(QWidget *parent)
     m_widget=new QWidget();
 
     m_widget->setObjectName("central");
-    m_widget->setMinimumSize(1000,700);
-
-
+    m_widget->setMinimumSize(1100,700);
 
     m_grid = new QGridLayout(this);
     m_visualGrid = new QGridLayout(this);
     m_settingGrid = new QGridLayout(this);
-
 
     m_simulSettingGrid = new QGridLayout(this);
     m_visualSettingGrid = new QGridLayout(this);
 
     m_grid->addLayout(m_settingGrid,0,0,3,1);
     m_grid->addLayout(m_visualGrid,0,1,3,3);
-
 
     QFrame *lineSim = new QFrame(this);
     lineSim->setFrameShape(QFrame::Box);
@@ -116,12 +112,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_visualGrid->addWidget(glWidget,0,0,2,2);
     m_visualGrid->addWidget(m_customPlot,2,0,2,2);
 
-
-
     m_data = new simulationData(NX,NY);
-    m_visualArr = new double*[NX];
-    for (int i = 0; i < NX; ++i)
-        m_visualArr[i] = new double [NY];
 
     m_data->setDx(1.0/NX);
     m_data->setDy(0.3/NY);
@@ -180,45 +171,62 @@ void MainWindow::replotGraph(int number)
     m_customPlot->clearGraphs();
     m_customPlot->xAxis->setLabel("x");
     m_customPlot->yAxis->setLabel("y");
-    QColor colors[6] = {QColor(255,0,0),QColor(0,255,0),QColor(0,0,255),QColor(255,255,0),QColor(0,255,255),QColor(255,0,255)};
+    QColor colors[6] = {QColor(255,0,0), QColor(255,155,0), QColor(0,255,0),QColor(0,0,255), QColor(255,0,255),QColor(0,255,255)};
     QVector<double> x, y;
     x.resize(NX);
     y.resize(NX);
 
     for (int j = 0; j < m_plots.size(); ++j)
     {
+        m_plots[j].max=-1e30;
+        m_plots[j].min=+1e30;
+        for (int i = 0; i < NX; ++i)
+        {
+            m_plots[j].max = m_plots[j].arr[i][(int)(m_crossBar->value())] > m_plots[j].max ? m_plots[j].arr[i][(int)(m_crossBar->value())] : m_plots[j].max;
+            m_plots[j].min = m_plots[j].arr[i][(int)(m_crossBar->value())] < m_plots[j].min ? m_plots[j].arr[i][(int)(m_crossBar->value())] : m_plots[j].min;
+        }
+        m_maxY = m_plots[j].max > m_maxY ? m_plots[j].max : m_maxY;
+        m_minY = m_plots[j].min < m_minY ? m_plots[j].min : m_minY;
+    }
+    double globalMax = m_maxY;
+    double globalMin = m_minY;
+    for (int j = 0; j < m_plots.size(); ++j)
+    {
+        m_plots[j].scale = (m_maxY - m_minY) / (m_plots[j].max - m_plots[j].min);
+        globalMax = m_plots[j].scale * m_plots[j].max > globalMax ? m_plots[j].scale * m_plots[j].max : globalMax;
+        globalMin = m_plots[j].scale * m_plots[j].min < globalMin ? m_plots[j].scale * m_plots[j].min : globalMin;
+    }
+
+
+
+    for (int j = 0; j < m_plots.size(); ++j)
+    {
         if(m_visualArrName ==  m_plots[j].name)
         {
-            for (int ii = 0; ii < NX; ++ii)
-                for (int jj = 0; jj < NY; ++jj)
-                    m_visualArr[ii][jj] = m_plots[j].arr[ii][jj];
-
-            glWidget->setField( m_visualArr , m_pParam->arrEps , m_pParam->arrMaskPhi, NX, NY, m_data->getDx(), m_data->getDy(), m_crossBar->value(), m_scallingBar->value());
+            glWidget->setField( m_plots[j].arr , m_pParam->arrEps , m_pParam->arrMaskPhi, NX, NY, m_data->getDx(), m_data->getDy(), m_crossBar->value(), 1.0*m_scallingBar->value());
             glWidget->repaint();
-
-            m_customPlot->addGraph();
-            m_customPlot->graph(0)->setName(m_plots[j].name);
-            m_customPlot->graph(0)->addToLegend();
-            for (int i = 0; i < NX; ++i)
-            {
-                x[i] = i / (NX * 1.0 / 2)-1;
-                y[i] = m_plots[j].arr[i][(int)(m_crossBar->value())];
-                if(y[i] > m_maxY)
-                    m_maxY = y[i];
-                if(y[i] < m_minY)
-                    m_minY = y[i];
-            }
-            m_customPlot->graph(0)->setData(x, y);
-            m_customPlot->graph(0)->setLineStyle((QCPGraph::LineStyle)(1));
-            QPen graphPen;
-            graphPen.setColor(colors[0]);
-            graphPen.setWidthF(2);
-            m_customPlot->graph(0)->setPen(graphPen);
-            m_customPlot->xAxis->setRange(-1, 1);
-            m_customPlot->yAxis->setRange(m_minY, m_maxY);
-            m_customPlot->legend->setVisible(true);
-            m_customPlot->replot();
         }
+
+        m_customPlot->addGraph();
+        for (int i = 0; i < NX; ++i)
+        {
+            x[i] = i / (NX * 1.0 / 2)-1;
+            y[i] =  m_plots[j].scale * m_plots[j].arr[i][(int)(m_crossBar->value())];
+        }
+
+        m_customPlot->graph(j)->setName(m_plots[j].name + "( scale = " + QString().number(m_plots[j].scale) + ")");
+        m_customPlot->graph(j)->addToLegend();
+        m_customPlot->graph(j)->setData(x, y);
+        m_customPlot->graph(j)->setLineStyle((QCPGraph::LineStyle)(1));
+        QPen graphPen;
+        graphPen.setColor(colors[j]);
+        graphPen.setWidthF(2);
+        m_customPlot->graph(j)->setPen(graphPen);
+        m_customPlot->xAxis->setRange(-1, 1);
+        m_customPlot->yAxis->setRange(globalMin, globalMax);
+        m_customPlot->legend->setVisible(true);
+        m_customPlot->replot();
+
     }
 }
 
@@ -244,6 +252,9 @@ void MainWindow::addPlot(double **arr, char *name, double scale)
 {
     m_fieldsComboBox->addItem(QString(name));
     plotStruct plot;
+    plot.arr= new double*[NX];
+    for (int i = 0; i < NX; ++i)
+        plot.arr[i] = new double [NY];
     for (int i = 0; i < NX; ++i)
     {
         for (int j = 0; j < NY; ++j)
@@ -306,7 +317,6 @@ void MainWindow::initData()
         m_fieldsComboBox->clear();
         m_storage.clear();
         m_progressBar->setValue(0.0);
-        m_timeScrollBar->setRange(0,0);
         m_visualArrName = m_fNe->name;
 
         addPlot(m_fNe->arr, m_fNe->name);
@@ -318,6 +328,7 @@ void MainWindow::initData()
         }
         saveInStorage();
         replotGraph(0);
+        m_timeScrollBar->setRange(0,0);
     }
     m_initiolized = true;
 }
