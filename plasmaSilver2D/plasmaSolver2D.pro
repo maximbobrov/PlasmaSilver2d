@@ -32,6 +32,7 @@ SOURCES += \
         mainwindow.cpp \
         phi_mult.cpp \
         qcustomplot.cpp \
+        reactionsolver.cpp \
         simulationdata.cpp \
         simulationsolver.cpp \
         simulationtools.cpp \
@@ -43,6 +44,7 @@ HEADERS += \
         mainwindow.h \
         phi_mult.h \
         qcustomplot.h \
+        reactionsolver.h \
         simulationdata.h \
         simulationsolver.h \
         simulationtools.h \
@@ -54,11 +56,15 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 DISTFILES += \
+    comsol/e+Ar_2e+Ar+.txt \
+    comsol/e+Ar_e+Ar.txt \
     comsol/e+Ar_e+Ar.txt \
     comsol/e+Ar_e+Ars.txt \
+    comsol/e+Ar_e+Ars.txt \
     comsol/e+Ars_2e+Ar+.txt \
+    comsol/e+Ars_2e+Ar+.txt \
+    comsol/e+Ars_e+Ar.txt \
     reactions/e+Ar_2e+Ar+.txt \
     reactions/e+Ar_e+Ar.txt \
     reactions/e+Ar_e+Ars.txt \
-    reactions/e+Ars_2e+Ar+.txt \
-    comsol/e+Ar_2e+Ar+.txt
+    reactions/e+Ars_2e+Ar+.txt

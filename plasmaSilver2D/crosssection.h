@@ -7,8 +7,9 @@ class splineInterp
 public:
 
     splineInterp(int splN = 0);
-    void fillData(double esNew[][2], int n); //copy from 2D array
+    void fillData(double esNew[][2], int n,double Na); //copy from 2D array
     double getSpline(double xp);
+    double getPrime(double xp);
     ~splineInterp();
 
 protected:

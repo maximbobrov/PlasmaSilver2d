@@ -22,6 +22,8 @@
 #define NX 129
 #define NY 129
 
+class reactionSolver;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -46,6 +48,7 @@ public:
     };
 
 public slots:
+    bool solveNewton();
     void initData();
     void updateData(int);
     void simulateData(bool);
@@ -98,6 +101,7 @@ private:
     simulationData::simulationField2d* m_fPhi;
     QVector<simulationData::simulationField2d*> m_fHeavy;
     simulationData::simulationParameters* m_pParam;
+    reactionSolver * m_rSolver;
 
     QVector<plotStruct> m_plots;
     QVector<storeStruct> m_storage;

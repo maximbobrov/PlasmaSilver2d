@@ -1,4 +1,5 @@
 /*electron temperature ev , forward rate constant m^3/(s*mol)*/
+{0.0     ,       0.0000   },
 {0.03333 ,       0.0000   },
 {1.0832	,       1.5046E9 },
 {1.5452	,       5.5265E9 },

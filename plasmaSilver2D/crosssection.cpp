@@ -72,20 +72,21 @@ void splineInterp::buildSpline()
 
 }
 
-void splineInterp::fillData(double esNew[][2], int n)//filling the data array into a spline
+void splineInterp::fillData(double esNew[][2], int n,double Na)//filling the data array into a spline
 {
 
     double x0,x1;
     x0=esNew[0][0];
     m_x0=x0;
     x1=esNew[n-1][0];
+    qDebug()<<"x0 = "<<x0<<" x1= "<<x1;
 
 
     double dx2=pow((x1-x0),m_xPow)/m_splNum;
     m_dXp=dx2;
 
     m_splX[0]= x0;
-    m_splA[0]=esNew[0][1];
+    m_splA[0]=esNew[0][1]/Na;
     m_splB[0]=0.0;
     m_splC[0]=0.0;
     m_splD[0]=0.0;
@@ -99,13 +100,15 @@ void splineInterp::fillData(double esNew[][2], int n)//filling the data array in
         if (j<n-1)
         {
             double alpha=(m_splX[i]-esNew[j][0])/(esNew[j+1][0]-esNew[j][0]);
-            m_splA[i]=esNew[j][1]*(1.0-alpha)+esNew[j+1][1]*alpha;
+            qDebug()<<"alpha "<<alpha<<" j= "<<j;
+            m_splA[i]=(esNew[j][1]*(1.0-alpha)+esNew[j+1][1]*alpha)/Na;
         }else
-            m_splA[i]=esNew[n-1][1];
+            m_splA[i]=esNew[n-1][1]/Na;
 
         m_splB[i]=0.0;
         m_splC[i]=0.0;
         m_splD[i]=0.0;
+        qDebug()<<"i = "<<i<<" xi = "<<m_splX[i]<<" yi ="<<m_splA[i];
     }
 
 
@@ -135,6 +138,17 @@ double splineInterp::getSpline(double xp)
     double dx=xp-m_splX[i];
     return m_splA[i]+m_splB[i]*dx+m_splC[i]*dx*dx+m_splD[i]*dx*dx*dx;
 
+}
+
+double splineInterp::getPrime(double xp)
+{
+    int i=(int)(pow(xp-m_x0,m_xPow)/m_dXp);
+
+    if (i>m_splNum)
+        return m_splA[m_splNum];
+
+    double dx=xp-m_splX[i];
+    return m_splB[i]+2.0*m_splC[i]*dx+3.0*m_splD[i]*dx*dx;
 }
 
 splineInterp::~splineInterp()

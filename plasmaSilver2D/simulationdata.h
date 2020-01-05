@@ -12,6 +12,30 @@ public:
 
     enum SpecieName
     {
+
+        Ar_plus,
+        Ar_star,
+
+        e,
+        En,
+        phi,
+        Ar
+    };
+
+    enum ReactionName
+    {
+        comsol_eAr_eAr,
+        comsol_eAr_eArs,
+        comsol_eArs_eAr,
+        comsol_eAr_2eArp,
+        comsol_eArs_2eArp,
+        comsol_ArsArs_EArArp,
+        comsol_ArsAr_ArAr
+        //comsol_eAr_2eArp
+    };
+
+    /*enum SpecieName
+    {
        Ar,
        Ar_star,
        Ar_plus
@@ -24,6 +48,7 @@ public:
        comsol_eAr_2eArp,
        comsol_eArs_2eArp
     };
+*/
 
     struct simulationField
     {
@@ -56,6 +81,7 @@ public:
         double** arrPrev;
         int cellsX;
         int cellsY;
+        simulationData::SpecieName m_specie;
         simulationField2d(int cellsX, int cellsY, char* name);
         private: void init(int cellsX, int cellsY, char* name);
     };
@@ -126,6 +152,7 @@ public:
     simulationParameters *getParameters();
 
 private:
+    friend class reactionSolver;
     double m_dt;
     double m_dx;
     double m_dy;

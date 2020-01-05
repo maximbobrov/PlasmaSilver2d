@@ -9,13 +9,20 @@ simulationData::simulationData(int iCellsX,int iCellsY)
 {
     m_cellsX = iCellsX;
     m_cellsY = iCellsY;
+    /*m_fieldNe = new simulationField2d(iCellsX, iCellsY,"electrons",simulationData::SpecieName::e);
+    m_fieldEnergy = new simulationField2d(iCellsX, iCellsY,"energy",simulationData::SpecieName::En);
+    m_fieldPhi = new simulationField2d(iCellsX, iCellsY,"potential",simulationData::SpecieName::phi);
+    m_fieldsHeavySpecies.push_back(new simulationField2d(iCellsX, iCellsY,"Ar+",simulationData::SpecieName::Ar_plus));
+    m_chargeHeavySpecies.push_back(1);
+    m_fieldsHeavySpecies.push_back(new simulationField2d(iCellsX, iCellsY,"Ars",simulationData::SpecieName::Ar_star));
+    m_chargeHeavySpecies.push_back(0);*/
     m_fieldNe = new simulationField2d(iCellsX, iCellsY,"electrons");
     m_fieldEnergy = new simulationField2d(iCellsX, iCellsY,"energy");
     m_fieldPhi = new simulationField2d(iCellsX, iCellsY,"potential");
     m_fieldsHeavySpecies.push_back(new simulationField2d(iCellsX, iCellsY,"Ar+"));
     m_chargeHeavySpecies.push_back(1);
     m_fieldsHeavySpecies.push_back(new simulationField2d(iCellsX, iCellsY,"Ars"));
-    m_chargeHeavySpecies.push_back(1);
+    m_chargeHeavySpecies.push_back(0);
     //  m_fieldsHeavySpecies.push_back(new simulationField(iCellsNumber,"Ar+"));
     // m_chargeHeavySpecies.push_back(1);
     m_numberHeavySpicies = m_fieldsHeavySpecies.size();
@@ -23,8 +30,11 @@ simulationData::simulationData(int iCellsX,int iCellsY)
 
     m_reactions.push_back(new reactionEAr_EAr_comsol(this));
     m_reactions.push_back(new reactionEAr_EArs_comsol(this));
+    m_reactions.push_back(new reactionEArs_EAr_comsol(this));
     m_reactions.push_back(new reactionEAr_2EArp_comsol(this));
     m_reactions.push_back(new reactionEArs_2EArp_comsol(this));
+   m_reactions.push_back(new reactionArsArs_EArArp_comsol(this));
+    m_reactions.push_back(new reactionArsAr_ArAr_comsol(this));
 }
 
 simulationData::~simulationData()
