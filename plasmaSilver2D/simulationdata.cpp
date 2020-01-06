@@ -289,7 +289,7 @@ void simulationData::simulationParameters::init(int iCellsX, int iCellsY)
 
     bound.init(cellsX,cellsY,arrBoundMask);
     T=400; //K
-    p=101325;//pa
+    p=101325/7600;//101325;//pa
     mAr=39.948/1000.0;//kg/mol
     rho=p*mAr/(8.314*T);//kg/m^3
     double Na=6.022e23; //1/mol
@@ -321,7 +321,8 @@ void simulationData::updateParams()
             }
             pParams->arrEps[i][j] = ( j >= (pParams->cellsY-1) / 4) ? 1.0 : 500.0;
 
-            if(((i >=  (pParams->cellsX-1) / 4  && i < 2*(pParams->cellsX-1)/4 && j >= (pParams->cellsY-1) / 4  && j < 2*(pParams->cellsY-1)/4)) || j <= (pParams->cellsY-1) / 4)
+            if(((i >=  (pParams->cellsX-1) / 4  && i < 2*(pParams->cellsX-1)/4 && j >= (pParams->cellsY-1) / 4  && j < 2*(pParams->cellsY-1)/4)) || j <= (pParams->cellsY-1) / 4
+                    || (i == 0) || (i == pParams->cellsX - 1) || (j == 0) || (j == pParams->cellsY - 1))
             {
                 pParams->arrMaskNe[i][j] = 0.0;
                 pParams->arrMaskNeValue[i][j] = 0.0;//1e5;

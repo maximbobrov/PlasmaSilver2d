@@ -32,8 +32,10 @@ protected:
 
     double** m_aRHS;
     double** m_aNu;
+    double** m_aMu;
     double** m_mask;
     double** m_maskValue;
+        int m_charge;
 };
 
 class solverNe : public simulationSolver
@@ -81,7 +83,6 @@ public:
 
     virtual ~solverHeavySpicies();
 private:
-    int m_charge;
 };
 
 #endif // SIMULATIONSOLVER_H

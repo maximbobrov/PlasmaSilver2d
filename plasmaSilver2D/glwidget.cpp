@@ -145,6 +145,8 @@ void GLWidget::paintGL()
                 get_color(sc*arr[i+1][j],min,max);
                 glVertex2f(dx*(i+1-N_X/2),dy*(j-N_Y/2));
             }
+            //min = 0.0;
+            //max = 1e11;
             glEnd();
             glPointSize(1);
             glBegin(GL_POINTS);

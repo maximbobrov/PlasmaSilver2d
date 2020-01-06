@@ -408,7 +408,7 @@ void MainWindow::updateData(int numberIt)
 
 bool MainWindow::solveNewton()
 {
-for (int nn=0;nn<10;nn++ )
+for (int nn=0;nn<5;nn++ )
 {
 
     double **ne=m_data->getFieldNe()->arr;
@@ -423,14 +423,14 @@ for (int nn=0;nn<10;nn++ )
     double **en0=m_data->getFieldEnergy()->arrPrev;
 
     m_data->updateParams();
-    m_sPhi->solve(1);
+    m_sPhi->solve(5);
 
 
-    m_sNe->setBc();
-    m_sEn->setBc();
+    //m_sNe->setBc();
+    //m_sEn->setBc();
     for (int j = 0; j < m_numberHeavySpicies; ++j)
     {
-        m_sHeavy[j]->setBc();
+       // m_sHeavy[j]->setBc();
     }
 
     //set leftbc;
@@ -438,16 +438,6 @@ for (int nn=0;nn<10;nn++ )
 
 
     m_rSolver->n_n=m_data->getParameters()->N;
-
-
-
-
-    m_sNe->setBc();
-    m_sEn->setBc();
-    for (int j = 0; j < m_numberHeavySpicies; ++j)
-    {
-        m_sHeavy[j]->setBc();
-    }
 
 
     for (int i=1; i <m_data->getCellsXNumber() - 1; i++)
@@ -482,8 +472,8 @@ for (int nn=0;nn<10;nn++ )
             ars[i][j]=m_rSolver->nars_o;
             en[i][j]=m_rSolver->neps_o;
             arp[i][j]=m_rSolver->narp_o;*/
-            ne[i][j]=ne[i][j]*0.9+0.1*m_sNe->getNewtonRhs(i,j);//*m_pParam-> arrMaskNe[i][j];
-            en[i][j]=en[i][j]*0.9+0.1*m_sEn->getNewtonRhs(i,j);//*m_pParam-> arrMaskNe[i][j];
+            ne[i][j]=ne[i][j]*0.9+0.1*m_sNe->getNewtonRhs(i,j)*m_pParam-> arrMaskNe[i][j];
+            en[i][j]=en[i][j]*0.9+0.1*m_sEn->getNewtonRhs(i,j)*m_pParam-> arrMaskNe[i][j];
             ars[i][j]=ars[i][j]*0.9+0.1*m_sHeavy[simulationData::SpecieName::Ar_star]->getNewtonRhs(i,j);//*m_pParam-> arrMaskNe[i][j];;
             arp[i][j]=arp[i][j]*0.9+0.1*m_sHeavy[simulationData::SpecieName::Ar_plus]->getNewtonRhs(i, j);//*m_pParam-> arrMaskNe[i][j];;
 
