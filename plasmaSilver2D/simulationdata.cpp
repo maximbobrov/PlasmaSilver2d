@@ -324,11 +324,11 @@ void simulationData::updateParams()
             if(((i >=  (pParams->cellsX-1) / 4  && i < 2*(pParams->cellsX-1)/4 && j >= (pParams->cellsY-1) / 4  && j < 2*(pParams->cellsY-1)/4)) || j <= (pParams->cellsY-1) / 4)
             {
                 pParams->arrMaskNe[i][j] = 0.0;
-                pParams->arrMaskNeValue[i][j] = 1e5;
+                pParams->arrMaskNeValue[i][j] = 0.0;//1e5;
                 pParams->arrMaskEnergy[i][j] = 0.0;
-                pParams->arrMaskEnergyValue[i][j] = 1e5;
+                pParams->arrMaskEnergyValue[i][j] = 0.0;//1e5;
                 pParams->arrMaskHeavy[i][j] = 0.0;
-                pParams->arrMaskHeavyValue[i][j] = 1e-25;
+                pParams->arrMaskHeavyValue[i][j] = 0.0;//1e-25;
 
                 pParams->arrBoundMask[i][j] = 0;
             }

@@ -201,6 +201,15 @@ bool reactionSolver::solve_diffuse(int itn)
          y- rhs_y=(x*(k[1]*n_n -(k[2]+k[4])*y) -2.0*nars_i*k[5]*y)*mask[i][j];
                 */
 
+        //x=((m_aRHS[i][j]-(bp*m_field->arr[i+1][j]+bm*m_field->arr[i-1][j]+cp*m_field->arr[i][j+1]+cm*m_field->arr[i][j-1]))
+        //        /a)*m_mask[i][j]+m_maskValue[i][j] +R*mask/a;
+        /*ne=rhs+R*mask/a;
+        -ne+rhs+R*mask/a=0;
+
+        nars=rhs+R*mask/a;*/
+
+
+        /*
         A=-1.0;//(mask*k[3]*n_n-1.0);
         D=0.0;//k[4]*y0*mask;
         C=0.0;//k[5]*y0*(y0/x0)*mask;
@@ -230,7 +239,7 @@ bool reactionSolver::solve_diffuse(int itn)
         y+=d_y;
 
         if ((x<0.9) || (x>1.1) || (y<0.9) || (y>1.1) )
-            return false;//x=0.9;
+            return false;//x=0.9;*/
 
 
 

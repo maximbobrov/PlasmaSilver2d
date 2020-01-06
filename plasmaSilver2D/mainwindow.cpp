@@ -118,7 +118,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_data->setDy(0.3/NY);
     m_data->setCellsXNumber(NX);
     m_data->setCellsYNumber(NY);
-    m_data->setDt(1e-7);
+    m_data->setDt(1e-6);
 
     m_sNe = new solverNe(m_data);
     m_sEn = new solverEnergy(m_data);
@@ -128,7 +128,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_textStartTime->setText(QString().number(0.0));
     m_textDeltaTime->setText(QString().number(m_data->getDt()));
-    m_textEndTime->setText(QString().number(1e-6));
+    m_textEndTime->setText(QString().number(1e-4));
 
     m_scallingBar->setRange(1,100);
     m_scallingBar->setValue(1);
@@ -340,8 +340,8 @@ void MainWindow::updateData(int numberIt)
     double dt= m_data->getDt();
 
 
-    dt*= 1.05;
-    m_data->setDt(dt);
+    //dt*= 1.05;
+    m_data->setDt(1e-6);//dt);
     for (int i = 0; i < numberIt; ++i)
     {
         m_data->updateParams();
@@ -354,16 +354,18 @@ void MainWindow::updateData(int numberIt)
             {
                 m_sHeavy[k]->solve(1);
             }
+            m_sPhi->solve(10);
         }*/
-        for (int i = 0; i < 10; ++i) {
-            if(!solveNewton())
+        solveNewton();
+        /*for (int i = 0; i < 10; ++i) {
+           if(!solveNewton())
             {
-                dt/=2.0;
-                m_textDeltaTime->setText(QString().number(dt));
-                m_data->setDt(dt);
+            //    dt/=2.0;
+              //  m_textDeltaTime->setText(QString().number(dt));
+            //    m_data->setDt(dt);
             }
 
-        }
+        }*/
         m_sNe->getStepEuler();
         m_sEn->getStepEuler();
         for (int j = 0; j < m_numberHeavySpicies; ++j)
@@ -406,7 +408,8 @@ void MainWindow::updateData(int numberIt)
 
 bool MainWindow::solveNewton()
 {
-
+for (int nn=0;nn<10;nn++ )
+{
 
     double **ne=m_data->getFieldNe()->arr;
     double **ars=m_data->getFieldHeavySpicies(simulationData::SpecieName::Ar_star)->arr;
@@ -419,8 +422,9 @@ bool MainWindow::solveNewton()
     double **arp0=m_data->getFieldHeavySpicies(simulationData::SpecieName::Ar_plus)->arrPrev;
     double **en0=m_data->getFieldEnergy()->arrPrev;
 
-    m_sPhi->solve(5);
     m_data->updateParams();
+    m_sPhi->solve(1);
+
 
     m_sNe->setBc();
     m_sEn->setBc();
@@ -438,15 +442,19 @@ bool MainWindow::solveNewton()
 
 
 
-
-
+    m_sNe->setBc();
+    m_sEn->setBc();
+    for (int j = 0; j < m_numberHeavySpicies; ++j)
+    {
+        m_sHeavy[j]->setBc();
+    }
 
 
     for (int i=1; i <m_data->getCellsXNumber() - 1; i++)
     {
         for (int j=1; j <m_data->getCellsXNumber() - 1; j++)
         {
-            m_rSolver->nu_ne=m_data->getParameters()->arrDe[i][j];
+            /*m_rSolver->nu_ne=m_data->getParameters()->arrDe[i][j];
             m_rSolver->nu_narp=m_data->getParameters()->arrDomega[i][j];
             m_rSolver->nu_neps=m_data->getParameters()->arrDeps[i][j];
             m_rSolver->nu_nars=m_data->getParameters()->arrDomega[i][j];
@@ -458,7 +466,7 @@ bool MainWindow::solveNewton()
 
             m_rSolver->eps_o=en[i][j]/ne[i][j];
             m_rSolver->mask = m_pParam-> arrMaskNe[i][j];
-            //   m_rSolver->n_n=m_data->getParameters()->N;
+           // m_rSolver->n_n=m_data->getParameters()->N;
 
 
             //x/dt_x - (x0/dt-nu*(xr+xl)/(dz*dz) + rhs) = x/dt_x -rhs_x
@@ -473,12 +481,18 @@ bool MainWindow::solveNewton()
             ne[i][j]=m_rSolver->ne_o;
             ars[i][j]=m_rSolver->nars_o;
             en[i][j]=m_rSolver->neps_o;
-            arp[i][j]=m_rSolver->narp_o;
+            arp[i][j]=m_rSolver->narp_o;*/
+            ne[i][j]=ne[i][j]*0.9+0.1*m_sNe->getNewtonRhs(i,j);//*m_pParam-> arrMaskNe[i][j];
+            en[i][j]=en[i][j]*0.9+0.1*m_sEn->getNewtonRhs(i,j);//*m_pParam-> arrMaskNe[i][j];
+            ars[i][j]=ars[i][j]*0.9+0.1*m_sHeavy[simulationData::SpecieName::Ar_star]->getNewtonRhs(i,j);//*m_pParam-> arrMaskNe[i][j];;
+            arp[i][j]=arp[i][j]*0.9+0.1*m_sHeavy[simulationData::SpecieName::Ar_plus]->getNewtonRhs(i, j);//*m_pParam-> arrMaskNe[i][j];;
+
+
         }
     }
 
 
-
+}
     /*  for ( j=m_data->getFieldNe()->cellsNumber - 3; j >1; j--)
     {
         m_rSolver->ne_i=ne[j];
@@ -502,7 +516,7 @@ bool MainWindow::solveNewton()
         arp[j]=m_rSolver->narp_o;
     }*/
     //
-    m_sPhi->solve(5);
+   // m_sPhi->solve(5);
 
 
     /*  qDebug()<<"N="<<m_data->getParameters()->N;
