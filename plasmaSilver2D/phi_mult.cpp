@@ -142,7 +142,7 @@ double multigrid_N(INPUT_PARAM par, double** field, double** rhs, double** mask,
             for (j=1;j<(N_Y-1)/pow(2,nn+1);j++)
             {
                 k=i*2; l=j*2;
-                rhs_[nn+1][i][j]=rhs_[nn][k][l] - (a*field_[nn][k][l]+b_p*field_[nn][k+1][l]+b_m*field_[nn][k-1][l]+c_p*field_[nn][k][l+1]+c_m*field_[nn][k][l-1]);
+                rhs_[nn+1][i][j]=rhs_[nn][k][l] - 4.0*(a*field_[nn][k][l]+b_p*field_[nn][k+1][l]+b_m*field_[nn][k-1][l]+c_p*field_[nn][k][l+1]+c_m*field_[nn][k][l-1]);
                 mask_[nn+1][i][j]=mask_[nn][k][l];
                 maskValue_[nn+1][i][j]=0.0;
                 field_[nn+1][i][j]=0.0;

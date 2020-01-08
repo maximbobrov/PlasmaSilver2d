@@ -82,8 +82,8 @@ public:
         int cellsX;
         int cellsY;
         simulationData::SpecieName m_specie;
-        simulationField2d(int cellsX, int cellsY, char* name);
-        private: void init(int cellsX, int cellsY, char* name);
+        simulationField2d(int cellsX, int cellsY, char* name,simulationData::SpecieName specie);
+        private: void init(int cellsX, int cellsY, char* name,simulationData::SpecieName specie);
     };
 
     struct simulationParameters
@@ -150,7 +150,7 @@ public:
 
     void calcReaction(ReactionName reactName);
     simulationParameters *getParameters();
-
+    std::vector<reaction *> m_reactions;
 private:
     friend class reactionSolver;
     double m_dt;
@@ -165,7 +165,7 @@ private:
     std::vector<simulationField2d* > m_fieldsHeavySpecies;
     std::vector<int> m_chargeHeavySpecies;
     simulationParameters* m_params;
-    std::vector<reaction *> m_reactions;
+
 };
 
 #endif // SIMULATIONDATA_H

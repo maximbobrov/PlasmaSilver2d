@@ -102,17 +102,8 @@ double simulationSolver::getNewtonRhs(int i,int j)
     double dt = m_pData->getDt();
     double ** phi  = m_pData->getFieldPhi()->arr;
 
-/*    double Grij = m_mask[i+1][j]*(-m_aNu[i][j] - m_charge * (phi[i+1][j] - phi[i][j]) * m_aMu[i][j]) / dx;
-    double Glij = m_mask[i-1][j]*( m_aNu[i][j] - m_charge * (phi[i][j] - phi[i-1][j]) * m_aMu[i][j]) / dx;
-    double Guij = m_mask[i][j+1]*(-m_aNu[i][j] - m_charge * (phi[i][j+1] - phi[i][j]) * m_aMu[i][j]) / dy;
-    double Gdij = m_mask[i][j-1]*( m_aNu[i][j] - m_charge * (phi[i][j] - phi[i][j-1]) * m_aMu[i][j]) / dy;
-    double Gr = m_mask[i+1][j]*(m_field->arr[i+1][j] * m_aNu[i][j]) / dx;
-    double Gl = - m_mask[i-1][j]*(m_field->arr[i-1][j] * m_aNu[i][j]) / dx;
-    double Gu = m_mask[i][j+1]*(m_field->arr[i][j+1] * m_aNu[i][j]) / dy;
-    double Gd = - m_mask[i][j-1]*(m_field->arr[i][j-1] * m_aNu[i][j]) / dy;
-*/
 
-        double ar= m_charge *  (phi[i+1][j] - phi[i][j]) * m_aMu[i][j];
+   /*     double ar= m_charge *  (phi[i+1][j] - phi[i][j]) * m_aMu[i][j];
         double al= m_charge *  (phi[i][j] - phi[i-1][j]) * m_aMu[i][j];
         double au= m_charge *  (phi[i][j+1] - phi[i][j]) * m_aMu[i][j];
         double ad= m_charge *  (phi[i][j] - phi[i][j-1]) * m_aMu[i][j];
@@ -124,19 +115,50 @@ double simulationSolver::getNewtonRhs(int i,int j)
       double Gr = m_mask[i+1][j]*(m_field->arr[i+1][j] * m_aNu[i][j]   + (m_charge<=0)*m_field->arr[i][j] * ar) / dx;
       double Gl = - m_mask[i-1][j]*(m_field->arr[i-1][j] * m_aNu[i][j] + (m_charge<=0)*m_field->arr[i][j] * al) / dx;
       double Gu = m_mask[i][j+1]*(m_field->arr[i][j+1] * m_aNu[i][j]   + (m_charge<=0)*m_field->arr[i][j] * au) / dy;
-      double Gd = - m_mask[i][j-1]*(m_field->arr[i][j-1] * m_aNu[i][j] + (m_charge<=0)*m_field->arr[i][j] * ad) / dy;
+      double Gd = - m_mask[i][j-1]*(m_field->arr[i][j-1] * m_aNu[i][j] + (m_charge<=0)*m_field->arr[i][j] * ad) / dy;*/
 
-    double res = 0.0;
+
+      ///////////////
+
+
+
+      double eu=/*calcE(j+1);*/phi[i][j+2] - phi[i][j+1];//phi[j+2] - phi[j+1];               //j+1
+      double ed=/*calcE(j-1);*/phi[i][j+1] - phi[i][j];
+
+      double er=/*calcE(j+1);*/phi[i+2][j] - phi[i+1][j];//phi[j+2] - phi[j+1];               //j+1
+      double el=/*calcE(j-1);*/phi[i+1][j] - phi[i][j];
+
+
+      double au= m_charge * eu *m_aMu[i][j] ;
+      double ad= m_charge * ed *m_aMu[i][j];
+
+      double ar= m_charge * er *m_aMu[i][j] ;
+      double al= m_charge * el *m_aMu[i][j];
+
+
+      double Ga_u = m_mask[i][j+1]*(-m_aNu[i][j] ) / dy;
+      double Ga_d = m_mask[i][j-1]*( m_aNu[i][j] ) / dy;
+      double Ga_r = m_mask[i+1][j]*(-m_aNu[i][j] ) / dx;
+      double Ga_l = m_mask[i-1][j]*( m_aNu[i][j] ) / dx;
+
+
+
+      double Gu = m_mask[i][j+1]*(m_field->arr[i][j+1] * m_aNu[i][j]   +2.0*(m_field->arrPrev[i][j+1]  )* au) / dy;
+      double Gd = m_mask[i][j-1]*(-m_field->arr[i][j-1] * m_aNu[i][j]  +2.0*(m_field->arrPrev[i][j]) * ad) / dy;
+
+      double Gr = m_mask[i+1][j]*(m_field->arr[i+1][j] * m_aNu[i][j]   +2.0*(m_field->arrPrev[i+1][j]  )* au) / dx;
+      double Gl = m_mask[i-1][j]*(-m_field->arr[i-1][j] * m_aNu[i][j]  +2.0*(m_field->arrPrev[i][j]) * ad) / dx;
+
+
+
+      ////////////////
+
     double rhs=getRhsAt(i,j);
 
-    double a = 1.0/dt - (Grij - Glij) / dx - (Guij - Gdij) / dy;
+    double a = 1.0/dt -  (Ga_u - Ga_d) / dy -  (Ga_r - Ga_l) / dx;
 
-    //return ((rhs-(bp*m_field->arr[i+1][j]+bm*m_field->arr[i-1][j]+cp*m_field->arr[i][j+1]+cm*m_field->arr[i][j-1]))
-    //       /a)*m_mask[i][j]+m_maskValue[i][j];
-
-    return ((rhs + m_field->arrPrev[i][j] / dt + ((Gr - Gl) / dx + (Gu - Gd) / dy)) / a)*m_mask[i][j]/*+m_maskValue[i][j]*/;
-
-
+    double res=((rhs + m_field->arrPrev[i][j] / dt + ((Gu - Gd) / dy) + ((Gr - Gl) / dx) ) / a)*m_mask[i][j];
+    return res;
 }
 
 void simulationSolver::getStepEuler()
@@ -274,25 +296,26 @@ double solverNe::getRhs()
 
 double solverNe::getRhsAt(int i, int j)
 {
-    simulationData::simulationParameters* pParams = m_pData->getParameters();
 
 
-    // m_pData->calcReaction(simulationData::ReactionName::comsol_eAr_2eArp);
-    // double** R1_Ar_e=m_pData->getReactionRate(simulationData::ReactionName::comsol_eAr_2eArp);
-    //  double mult=pParams->p/(pParams->T*8.314);
-    double ** phi  = m_pData->getFieldPhi()->arr;
-    double dx=m_pData->getDx();
-    double dy=m_pData->getDy();
-    double dt=m_pData->getDt();
+    double ne=m_pData->getFieldNe()->arrPrev[i][j];
+    double nars=m_pData->getFieldHeavySpicies(simulationData::SpecieName::Ar_star)->arrPrev[i][j];
+    double Te=m_pData->getParameters()->arrTe[i][j];
+    static double n_n=m_pData->getParameters()->N;
 
-    int mm=(m_field->arr[i][j]>1e-5);
-    return 0.0;// mult*R1_Ar_e[i][j] //*m_field->arr[i][j]+
-            /*+m_field->arrPrev[i][j]/dt
-            + mm*pParams->arrMue[i][j]*(pParams->arrEx[i][j] * simulationTools::ddxUpWind(m_field->arr, m_field->cellsX, dx, i, j, pParams->arrEx[i][j])
-                                        + pParams->arrEy[i][j] * simulationTools::ddyUpWind(m_field->arr, m_field->cellsY, dy, i, j, pParams->arrEy[i][j])
-                                        + m_field->arr[i][j] * pParams->arrLaplPhi[i][j])
-            + simulationTools::ddxCentral(m_field->arr,m_field->cellsX, dx, i, j) * simulationTools::ddxCentral(pParams->arrDe,m_field->cellsX, dx, i, j)
-            + simulationTools::ddyCentral(m_field->arr,m_field->cellsY, dy, i, j) * simulationTools::ddyCentral(pParams->arrDe,m_field->cellsY, dy, i, j);*/
+    static double k[7];
+
+
+    //for (int i=0;i<7;i++)
+    {
+        k[3]=m_pData->m_reactions[3]->getRate(fmax(fmin(Te,40),0.0001));
+        k[4]=m_pData->m_reactions[4]->getRate(fmax(fmin(Te,40),0.0001));
+        k[5]=m_pData->m_reactions[5]->getRate(fmax(fmin(Te,40),0.0001));
+
+        //    dk[i]=m_reactions[i]->getDeriv(eps*2.0/3.0);
+    }
+
+    return ne*(k[3]*n_n + k[4]*nars) + k[5]*nars*nars;
 }
 
 void solverNe::setBc()
@@ -435,42 +458,35 @@ double solverEnergy::getRhsAt(int i, int j)
 {
     simulationData::simulationParameters* pParams = m_pData->getParameters();
     simulationData::simulationField2d* pNe = m_pData->getFieldNe();
-    //double dz = m_pData->getDz();
 
-
-    // m_pData->calcReaction(simulationData::ReactionName::comsol_eAr_2eArp);
-
-    // double** R1_Ar_e=m_pData->getReactionRate(simulationData::ReactionName::comsol_eAr_2eArp);
-    // double de=m_pData->getReactionDe(simulationData::ReactionName::comsol_eAr_2eArp);
-
-    //double mult=fabs(m_pData->q*de*pParams->p/(pParams->T*8.314));
-    /*for (int i = 0; i < m_field ->cellsNumber-1; ++i)
-    {
-        double electronFlux =  - pParams->arrMue[i] * pParams->arrE[i] * pNe->arr[i] - pParams->arrDe[i]*simulationTools::ddzCentral(pNe->arr, m_field ->cellsNumber, dz, i);
-        //(pNe->arr[i+1]-pNe->arr[i]);
-        m_aRHS[i]= mult*R1_Ar_e[i]*pNe->arr[i]
-                   + pParams->arrMueps[i] * pParams->arrE[i] * simulationTools::ddzCentral(m_field->arr, m_field ->cellsNumber, dz, i)
-                   + pParams->arrMueps[i] * m_field->arr[i] * simulationTools::ddzCentral(pParams->arrE, m_field ->cellsNumber, dz, i)
-                   + simulationTools::ddzCentral(m_field->arr, m_field ->cellsNumber, dz, i) * simulationTools::ddzCentral(pParams->arrDeps, m_field ->cellsNumber, dz, i)
-                   - electronFlux * pParams->arrE[i];
-    }*/
     double dx=m_pData->getDx();
     double dy=m_pData->getDy();
     double dt=m_pData->getDt();
     double mu=1.0;
 
-    int mm=(m_field->arr[i][j]>1e-5);
+
     int mm2=(pNe->arr[i][j]>1e-5);
     double electronFluxX = 0.5*(- mm2 * pParams->arrMue[i][j] * pParams->arrEx[i][j] * pNe->arr[i][j] - pParams->arrDe[i][j]*simulationTools::ddxCentral(pNe->arr, m_field->cellsX, dx, i, j));
     double electronFluxY = 0.5*(- mm2 * pParams->arrMue[i][j] * pParams->arrEy[i][j] * pNe->arr[i][j] - pParams->arrDe[i][j]*simulationTools::ddyCentral(pNe->arr, m_field->cellsY, dy, i, j));
-    return // mult*R1_Ar_e[i][j]//*pNe->arr[i][j]+
-           /* +m_field->arrPrev[i][j]/dt
-            + mm*pParams->arrMueps[i][j]*(pParams->arrEx[i][j] * simulationTools::ddxUpWind(m_field->arr, m_field->cellsX, dx, i, j, pParams->arrEx[i][j])
-                                          + pParams->arrEy[i][j] * simulationTools::ddyUpWind(m_field->arr, m_field->cellsY, dy, i, j, pParams->arrEy[i][j])
-                                          + m_field->arr[i][j] * pParams->arrLaplPhi[i][j])
-            + simulationTools::ddxCentral(m_field->arr,m_field->cellsX, dx, i, j) * simulationTools::ddxCentral(pParams->arrDeps,m_field->cellsX, dx, i, j)
-            + simulationTools::ddyCentral(m_field->arr,m_field->cellsY, dy, i, j) * simulationTools::ddyCentral(pParams->arrDeps,m_field->cellsY, dy, i, j)*/
-            - electronFluxX * pParams->arrEx[i][j] - electronFluxY * pParams->arrEy[i][j];
+
+    double ne=m_pData->getFieldNe()->arrPrev[i][j];
+    double nars=m_pData->getFieldHeavySpicies(simulationData::SpecieName::Ar_star)->arrPrev[i][j];
+    double Te=m_pData->getParameters()->arrTe[i][j];
+    static double n_n=m_pData->getParameters()->N;
+
+    static double k[7],dE[7];
+
+
+    for (int i=1;i<6;i++)
+    {
+        k[i]=m_pData->m_reactions[i]->getRate(fmax(fmin(Te,40),0.0001));
+        dE[i]=m_pData->m_reactions[i]->getDe();
+    }
+
+
+    return   - electronFluxX * pParams->arrEx[i][j] - electronFluxY * pParams->arrEy[i][j] +
+            ne*(n_n*(dE[1]*k[1] + dE[3]*k[3])
+            +nars*(dE[2]*k[2] + dE[4]*k[4])) + dE[5]*k[5]*nars*nars;
 
 }
 
@@ -556,6 +572,7 @@ double solverPhi::getRhs()
     double q_over_eps0=q_e/eps_0;
 
     double** pNe = m_pData->getFieldNe()->arr;
+    double** pArp = m_pData->getFieldHeavySpicies(0)->arr;
 
     double mult= (pParams->p*6.022e23)/(pParams->T*8.314);
     double dx = m_pData->getDx();
@@ -566,6 +583,7 @@ double solverPhi::getRhs()
         for (int j=1; j<m_field ->cellsY-1; j++)
         {
             m_aRHS[i][j]= /*q_over_eps0*0.5*((pNe[i][j]+pNe[i+1][j])+mult*(pArp[i][j]+pArp[i+1][j]))*/
+                    -q_over_eps0*((pNe[i][j])-(pArp[i][j]))
                     - ((m_field->arrPrev[i+1][j]-m_field->arrPrev[i-1][j])*(pParams->arrEps[i+1][j]-pParams->arrEps[i-1][j])/(4*dx*dx)
                     +(m_field->arr[i][j+1]-m_field->arr[i][j])*(pParams->arrEps[i][j+1]-pParams->arrEps[i][j])/(dy*dy))/pParams->arrEps[i][j];
             pParams->arrLaplPhi[i][j] = m_aRHS[i][j];
@@ -648,7 +666,7 @@ solverHeavySpicies::solverHeavySpicies(simulationData *pData, int num):simulatio
     m_aNu = m_pData->getParameters()->arrDomega;
     m_aMu = m_pData->getParameters()->arrMuomega;
 
-
+   m_specie=m_field->m_specie;
 
     m_maskValue= m_pData->getParameters()->arrMaskHeavyValue;
     for (int i = 0; i < m_field ->cellsX; ++i) {
@@ -693,24 +711,45 @@ double solverHeavySpicies::getRhs()
 double solverHeavySpicies::getRhsAt(int i, int j)
 {
 
-    simulationData::simulationField2d* pNe = m_pData->getFieldNe();
-    simulationData::simulationParameters* pParams = m_pData->getParameters();
-    double dx = m_pData->getDx();
-    double dy = m_pData->getDy();
-    double dt = m_pData->getDt();
 
-    //  m_pData->calcReaction(simulationData::ReactionName::comsol_eAr_2eArp);
-    //  double** R1_Ar_e=m_pData->getReactionRate(simulationData::ReactionName::comsol_eAr_2eArp);
-    //  double mult=pParams->p / ( pParams->T * 8.314 * 6.022e23 * pParams->rho);
+    double ne=m_pData->getFieldNe()->arrPrev[i][j];
+    double nars=m_pData->getFieldHeavySpicies(simulationData::SpecieName::Ar_star)->arrPrev[i][j];
+    double Te=m_pData->getParameters()->arrTe[i][j];
+    static double n_n=m_pData->getParameters()->N;
 
+    static double k[7];
 
+    if (m_specie==simulationData::SpecieName::Ar_plus)
+    {
+        //for (int i=0;i<7;i++)
+        {
+            k[3]=m_pData->m_reactions[3]->getRate(fmax(fmin(Te,40),0.0001));
+            k[4]=m_pData->m_reactions[4]->getRate(fmax(fmin(Te,40),0.0001));
+            k[5]=m_pData->m_reactions[5]->getRate(fmax(fmin(Te,40),0.0001));
 
-    return 0.0;//mult*R1_Ar_e[i][j]//*pNe->arr[i][j]+
-            /*+ m_field->arrPrev[i][j]/dt +
-            -  m_charge  * pParams->arrMuomega[i][j] * (pParams->arrEx[i][j] * simulationTools::ddxCentral(m_field->arr, m_field ->cellsX, dx, i, j)
-                                                        + pParams->arrEy[i][j] * simulationTools::ddyCentral(m_field->arr, m_field ->cellsY, dy, i, j)
-                                                        + m_field->arr[i][j] * simulationTools::ddxCentral(pParams->arrEx, m_field ->cellsX, dx, i, j)
-                                                        + m_field->arr[i][j] * simulationTools::ddyCentral(pParams->arrEy, m_field ->cellsY, dy, i, j));*/
+            //    dk[i]=m_reactions[i]->getDeriv(eps*2.0/3.0);
+        }
+
+        return ne*(k[3]*n_n + k[4]*nars) + k[5]*nars*nars;
+
+    }else if (m_specie==simulationData::SpecieName::Ar_star)
+    {
+
+        //        ne*(k[1]*n_n -(k[2]+k[4])*nars) -2.0*k[5]*nars*nars;
+
+        //for (int i=0;i<7;i++)
+        {
+            k[1]=m_pData->m_reactions[1]->getRate(fmax(fmin(Te,40),0.0001));
+            k[2]=m_pData->m_reactions[2]->getRate(fmax(fmin(Te,40),0.0001));
+            k[4]=m_pData->m_reactions[4]->getRate(fmax(fmin(Te,40),0.0001));
+            k[5]=m_pData->m_reactions[5]->getRate(fmax(fmin(Te,40),0.0001));
+
+            //    dk[i]=m_reactions[i]->getDeriv(eps*2.0/3.0);
+        }
+
+        return ne*(k[1]*n_n -(k[2]+k[4])*nars) -2.0*k[5]*nars*nars;;
+    }
+    return 0;
 }
 
 void solverHeavySpicies::setBc()

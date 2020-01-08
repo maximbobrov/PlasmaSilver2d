@@ -16,12 +16,12 @@ simulationData::simulationData(int iCellsX,int iCellsY)
     m_chargeHeavySpecies.push_back(1);
     m_fieldsHeavySpecies.push_back(new simulationField2d(iCellsX, iCellsY,"Ars",simulationData::SpecieName::Ar_star));
     m_chargeHeavySpecies.push_back(0);*/
-    m_fieldNe = new simulationField2d(iCellsX, iCellsY,"electrons");
-    m_fieldEnergy = new simulationField2d(iCellsX, iCellsY,"energy");
-    m_fieldPhi = new simulationField2d(iCellsX, iCellsY,"potential");
-    m_fieldsHeavySpecies.push_back(new simulationField2d(iCellsX, iCellsY,"Ar+"));
+    m_fieldNe = new simulationField2d(iCellsX, iCellsY,"electrons",simulationData::SpecieName::e);
+    m_fieldEnergy = new simulationField2d(iCellsX, iCellsY,"energy",simulationData::SpecieName::En);
+    m_fieldPhi = new simulationField2d(iCellsX, iCellsY,"potential",simulationData::SpecieName::phi);
+    m_fieldsHeavySpecies.push_back(new simulationField2d(iCellsX, iCellsY,"Ar+",simulationData::SpecieName::Ar_plus));
     m_chargeHeavySpecies.push_back(1);
-    m_fieldsHeavySpecies.push_back(new simulationField2d(iCellsX, iCellsY,"Ars"));
+    m_fieldsHeavySpecies.push_back(new simulationField2d(iCellsX, iCellsY,"Ars",simulationData::SpecieName::Ar_star));
     m_chargeHeavySpecies.push_back(0);
     //  m_fieldsHeavySpecies.push_back(new simulationField(iCellsNumber,"Ar+"));
     // m_chargeHeavySpecies.push_back(1);
@@ -175,13 +175,13 @@ void simulationData::simulationField::init(int iCellsNumber, char* iName)
     strcpy(name, iName);
 }
 
-simulationData::simulationField2d::simulationField2d(int iCellsX, int iCellsY, char* iName)
+simulationData::simulationField2d::simulationField2d(int iCellsX, int iCellsY, char* iName,SpecieName specie)
 {
 
-    init(iCellsX, iCellsY, iName);
+    init(iCellsX, iCellsY, iName,specie);
 }
 
-void simulationData::simulationField2d::init(int iCellsX, int iCellsY, char* iName)
+void simulationData::simulationField2d::init(int iCellsX, int iCellsY, char* iName, SpecieName specie)
 {
     cellsX =  iCellsX;
     cellsY =  iCellsY;
@@ -195,6 +195,7 @@ void simulationData::simulationField2d::init(int iCellsX, int iCellsY, char* iNa
     name = new char[len+1];
     name[len]=0;
     strcpy(name, iName);
+    m_specie=specie;
 }
 
 void simulationData::simulationParameters::init(int iCellsX, int iCellsY)

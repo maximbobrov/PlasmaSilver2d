@@ -82,6 +82,8 @@ public:
     virtual void setBc();
 
     virtual ~solverHeavySpicies();
+
+    simulationData::SpecieName m_specie;
 private:
 };
 
