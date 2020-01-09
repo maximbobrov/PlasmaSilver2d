@@ -113,6 +113,9 @@ MainWindow::MainWindow(QWidget *parent)
     m_visualGrid->addWidget(m_customPlot,2,0,2,2);
 
     m_data = new simulationData(NX,NY);
+    m_visualArr = new double*[NX];
+    for (int i = 0; i < NX; ++i)
+        m_visualArr[i] = new double [NY];
 
     m_data->setDx(1.0/NX);
     m_data->setDy(0.3/NY);
@@ -205,7 +208,10 @@ void MainWindow::replotGraph(int number)
     {
         if(m_visualArrName ==  m_plots[j].name)
         {
-            glWidget->setField( m_plots[j].arr , m_pParam->arrEps , m_pParam->arrMaskPhi, NX, NY, m_data->getDx(), m_data->getDy(), m_crossBar->value(), 1.0*m_scallingBar->value());
+            for (int ii = 0; ii < NX; ++ii)
+                for (int jj = 0; jj < NY; ++jj)
+                    m_visualArr[ii][jj] = m_plots[j].arr[ii][jj];
+            glWidget->setField( m_visualArr , m_pParam->arrEps , m_pParam->arrMaskPhi, NX, NY, m_data->getDx(), m_data->getDy(), m_crossBar->value(), 1.0*m_scallingBar->value());
             glWidget->repaint();
         }
 
@@ -254,9 +260,6 @@ void MainWindow::addPlot(double **arr, char *name, double scale)
 {
     m_fieldsComboBox->addItem(QString(name));
     plotStruct plot;
-    plot.arr= new double*[NX];
-    for (int i = 0; i < NX; ++i)
-        plot.arr[i] = new double [NY];
     for (int i = 0; i < NX; ++i)
     {
         for (int j = 0; j < NY; ++j)
@@ -363,18 +366,18 @@ void MainWindow::updateData(int numberIt)
 
     dt*= 1.05;
     m_data->setDt(dt);
-     for (int i = 0; i < 2; ++i)
-     {
-         m_data->updateParams();
-         m_sNe->solve(5);
-         m_sEn->solve(5);
-         for (int j = 0; j < m_numberHeavySpicies; ++j)
-         {
-             m_sHeavy[j]->solve(5);
-         }
-         m_sPhi->solve(50);
+    for (int i = 0; i < 2; ++i)
+    {
+        m_data->updateParams();
+        m_sNe->solve(5);
+        m_sEn->solve(5);
+        for (int j = 0; j < m_numberHeavySpicies; ++j)
+        {
+            m_sHeavy[j]->solve(5);
+        }
+        m_sPhi->solve(50);
 
-     }
+    }
 
 
 

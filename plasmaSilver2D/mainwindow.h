@@ -33,7 +33,7 @@ public:
     ~MainWindow();
 
     struct plotStruct{
-        double **arr;
+        double arr[NX][NY];
         double **arrRef;
         QString name;
         double max;
@@ -109,6 +109,7 @@ private:
     bool m_animStopped;
     double m_startTime,m_endTime;
     double m_time;
+    double** m_visualArr;
     QString m_visualArrName;
     bool m_initiolized;
 
