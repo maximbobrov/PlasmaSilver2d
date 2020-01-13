@@ -612,7 +612,7 @@ double solverPhi::solve(int iNumberIteration)
             m_field->arr[i][m_field ->cellsY-1]=0.0;
             m_field->arr[i][0]=0.0;
             //if ((i<20)&&(i>0)) m_field->arr[i][m_field ->cellsY-1]=-1500.0;
-            if ((i>=60)&&(i<m_field ->cellsX-1)) m_field->arr[i][0]=+1500;
+            if ((i>=20)&&(i<m_field ->cellsX-1)) m_field->arr[i][0]=+1500;
         }
 
         getRhs();
@@ -633,9 +633,9 @@ double solverPhi::solve(int iNumberIteration)
         par.cp=-1.0/(dy*dy);
         par.cm=-1.0/(dy*dy);
 
-        par.w_bc_type=0;
-        par.e_bc_type=0;
-        par.n_bc_type=3;
+        par.w_bc_type=1;
+        par.e_bc_type=1;
+        par.n_bc_type=1;
         par.s_bc_type=3;
 
         par.w_bc_val=0.0;

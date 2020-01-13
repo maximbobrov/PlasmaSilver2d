@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include <reactionsolver.h>
 
-#define NX 129
-#define NY 129
+#define NX 257
+#define NY 257
 
 
 
@@ -408,9 +408,9 @@ bool MainWindow::solveNewton()
         m_sPhi->solve(1);
         m_data->updateParams();
 
-        for (int i=1; i <m_data->getCellsXNumber() - 1; i++)
+        for (int i=1; i <m_data->getCellsXNumber() - 2; i++)
         {
-            for (int j=1; j <m_data->getCellsXNumber() - 1; j++)
+            for (int j=1; j <m_data->getCellsXNumber() - 2; j++)
             {
                 ne[i][j]=ne[i][j]*0.5+0.5*m_sNe->getNewtonRhs(i,j)*m_pParam-> arrMaskNe[i][j];
                 en[i][j]=en[i][j]*0.5+0.5*m_sEn->getNewtonRhs(i,j)*m_pParam-> arrMaskNe[i][j];

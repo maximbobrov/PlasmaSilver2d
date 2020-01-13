@@ -6,8 +6,8 @@
 //#include "globals.h"
 
 //for multigrid
-#define N_X 129
-#define N_Y 129
+#define N_X 257
+#define N_Y 257
 typedef struct
 {
     double a,bm,bp,cm,cp;

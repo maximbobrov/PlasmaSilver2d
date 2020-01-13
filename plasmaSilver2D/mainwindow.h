@@ -19,8 +19,8 @@
 #include "simulationdata.h"
 #include "simulationsolver.h"
 #include "simulationtools.h"
-#define NX 129
-#define NY 129
+#define NX 257
+#define NY 257
 
 class reactionSolver;
 

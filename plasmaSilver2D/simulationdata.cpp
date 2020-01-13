@@ -310,7 +310,7 @@ void simulationData::updateParams()
     {
         for (int j=0; j<pParams->cellsY; j++)
         {
-            if((i >=  (pParams->cellsX-1) / 4  && i < 2*(pParams->cellsX-1)/4 && j >= (pParams->cellsY-1) / 4  && j < 2*(pParams->cellsY-1)/4))
+            if((i >= 0/* (pParams->cellsX-1) / 4 */ && i < (pParams->cellsX-1)/8 && j >= (pParams->cellsY-1) / 8  && j < 0.75*2*(pParams->cellsY-1)/8))
             {
                 pParams->arrMaskPhi[i][j] = 0.0;
                 pParams->arrMaskPhiValue[i][j] = -1500;
@@ -320,9 +320,9 @@ void simulationData::updateParams()
                 pParams->arrMaskPhi[i][j] = 1.0;
                 pParams->arrMaskPhiValue[i][j] =0.0;
             }
-            pParams->arrEps[i][j] = ( j >= (pParams->cellsY-1) / 4) ? 1.0 : 500.0;
+            pParams->arrEps[i][j] = ( j >= (pParams->cellsY-1) / 8) ? 1.0 : 500.0;
 
-            if(((i >=  (pParams->cellsX-1) / 4  && i < 2*(pParams->cellsX-1)/4 && j >= (pParams->cellsY-1) / 4  && j < 2*(pParams->cellsY-1)/4)) || j <= (pParams->cellsY-1) / 4
+            if(((i >=0 /* (pParams->cellsX-1) / 4*/  && i < (pParams->cellsX-1)/8 && j >= (pParams->cellsY-1) / 8  && j < 0.75*2*(pParams->cellsY-1)/8)) || j <= (pParams->cellsY-1) / 8
                     || (i == 0) || (i == pParams->cellsX - 1) || (j == 0) || (j == pParams->cellsY - 1))
             {
                 pParams->arrMaskNe[i][j] = 0.0;
