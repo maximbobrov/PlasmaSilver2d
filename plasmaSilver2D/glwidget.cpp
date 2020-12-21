@@ -89,7 +89,7 @@ void GLWidget::setField(double **iArr, double **iEps, double **iElectrod, int iN
     sc = isc;
     crossNum = iCrossNum;
 }
-
+#include "mon/mcm.h"
 void GLWidget::paintGL()
 {
     glColor3f(1,1,1);
@@ -204,10 +204,57 @@ void GLWidget::paintGL()
         draw_text((+n/2)*0.5/20,0.0-0.2*0.9, 0.0,  QString().number(max));
     }
 
+/**********Monte**********/
+    using namespace monte;
+    glLineWidth(1.0);
+    glPointSize(2.0);
 
 
+    /*glColor3f(0.1,0.1,0.1);
+    glBegin(GL_QUADS);
+    glVertex3f(0,0,0);
+    glVertex3f(monte::dx*ncx,0,0);
+    glVertex3f(monte::dx*ncx,dy*ncy,0);
+    glVertex3f(0,dy*ncy,0);
+    glEnd();*/
 
-    glEnable(GL_DEPTH_TEST);
+
+    printf("nsp=%d \n",nsp);
+    printf("np[0]=%d \n",np[0]);
+    printf("np[1]=%d \n",np[1]);
+    glColor3f(1,0,0);
+
+
+    /*glBegin(GL_POINTS);
+     for (int i=0;i<np[1];i+=4)
+       {
+        // printf("x=%e y=%e vx=%e vy=%e \n",x[0][i]*dx,y[0][i],vx[0][i],vy[0][i]);
+double v2=vx[1][i]*vx[1][i]+vy[1][i]*vy[1][i];
+//printf("v2=%e \n",v2);
+           glColor3f(sc*v2,sc*v2,0);
+         glVertex3f(monte::x[1][i]*monte::dx  - dx * N_X/2 ,
+                       monte::y[1][i]*monte::dy  -  dy *N_Y/2,
+                      0 );
+       }
+    glEnd();*/
+
+    glBegin(GL_POINTS);
+     for (int i=0;i<np[0];i+=4)
+       {
+        // printf("x=%e y=%e vx=%e vy=%e \n",x[0][i]*dx,y[0][i],vx[0][i],vy[0][i]);
+double v2=vx[0][i]*vx[0][i]+vy[0][i]*vy[0][i];
+//printf("v2=%e \n",v2);
+           glColor3f(0,10000 * sc*v2,0);
+         glVertex3f(monte::x[0][i]*monte::dx - dx * N_X/2,
+                       monte::y[0][i]*monte::dy -  dy *N_Y/2,
+                      0 );
+       }
+
+     /**********Monte**********/
+
+    glEnd();
+
+    glDisable(GL_DEPTH_TEST);
 
 
 }

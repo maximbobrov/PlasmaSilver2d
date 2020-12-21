@@ -1,0 +1,65 @@
+argon.inp: Argon RF discharge
+
+-nsp---ncx---ncy---nc2p---dt[s]---xlength[m]--ylength[m]--zlength[m]--epsilonr-
+  2     80   160    1e6  3.600894e-11 1.0       0.3        0.1         1.0
+
+-lhs--length[m]--dc[V|Amp]---ac[V|Amp]--f0[Hz]--theta0[D]--extC[F]--gapsize[nc]-
+  1     0.3      0.0          2500       13.56e6     0.0    1e-9      0 
+
+-rhs--length[m]--dc[V|Amp]---ac[V|Amp]--f0[Hz]--theta0[D]--extC[F]--gapsize[nc]-
+ 0      0.3     0.0          0.0        13.56e6   0.0        1.0        0
+
+-rhoback[C/m^3]--bmag[T]--btheta[D]--bphi[D]---nfft---sflag--tol_pois--strc_max-
+   0.0            0.0       0.0         0.0     2048     4      0.001      0
+
+-e_collisional--i_collisional--ion species--Gpressure[Torr]--GTemp[eV]--
+ 1              1               2              0.1              0.026
+
+-bc_flag(0=x,y Dirichlet; 1=x D, y Periodic)------local----wall-----wallread--
+ 0                                                 0        0        0
+
+ELECTRONS (Species 1)
+
+----q[C]-------m[Kg]-------k-----max-np---rel_weight---
+ -1.602e-19   9.11e-31     1     200000        1
+
+-Loader Type---fill_region---xleft---xright---ylow---yhigh--
+      0             1         0.0    0.03    0.0    0.06
+
+Initial Loader---Ninit[m^-3]---E0x[eV]---E0y[eV]---E0z[m/s]---T[eV]--
+                  1.0e15        0.0         0.0       0.0      2.5
+
+LHS Injection----JxL[#/m^2-s]--E0x[eV]---E0y[eV]---E0z[m/s]---T[eV]--
+                  0             0.0        0.0       0.0       2.5  
+
+RHS Injection----JxR[#/m^2-s]--E0x[eV]---E0y[eV]---E0z[m/s]---T[eV]--
+                    0.0           0.0       0.0       0.0       2.5
+
+--nbin_lhs---emin_lhs---de_lhs---nbin_rhs---emin_rhs---de_rhs--
+    200        0.0       0.1      200        0.0       0.1
+
+--secondary----wall_sec----lhs_sec----rhs_sec----grid_sec--
+     0            0.0        0.0        0.0         0.0
+
+ARGON (Species 2)
+
+----q[C]-------m[Kg]-------k-----max-np---rel_weight---
+  1.602e-19    6.7e-26    32     200000       1 
+
+-Loader Type---fill_region---xleft---xright---ylow---yhigh--
+      0             1         0.0    0.03     0.0    0.06
+
+Initial Loader---Ninit[m^-3]---E0x[eV]---E0y[eV]---E0z[m/s]---T[eV]--
+                  1.0e15         0.0       0.0     0.0        0.04
+
+LHS Injection----JxL[#/m^2-s]--E0x[eV]---E0y[eV]---E0z[m/s]---T[eV]--
+                  0.0              0.0       0.0     0.0       0.0
+
+RHS Injection----JxR[#/m^2-s]--E0x[eV]---E0y[eV]---E0z[m/s]---T[eV]--
+                    0.0           0.0       0.0       0.0      0.0
+
+--nbin_lhs---emin_lhs---de_lhs---nbin_rhs---emin_rhs---de_rhs--
+    200        0.0       1.00      200        0.0       1.00
+
+--secondary----wall_sec----lhs_sec----rhs_sec----grid_sec--
+     0            0.0        0.0        0.0         0.0

@@ -31,6 +31,17 @@ SOURCES += \
         glwidget.cpp \
         main.cpp \
         mainwindow.cpp \
+        mon/argonmcc.cpp \
+        mon/boundary.cpp \
+        mon/dadi.cpp \
+        mon/fft.cpp \
+        mon/field.cpp \
+        mon/field2.cpp \
+        mon/gather.cpp \
+        mon/load.cpp \
+        mon/maxwellv.cpp \
+        mon/mcm.cpp \
+        mon/move.cpp \
         phi_mult.cpp \
         qcustomplot.cpp \
         reactionsolver.cpp \
@@ -43,6 +54,7 @@ HEADERS += \
         crosssection.h \
         glwidget.h \
         mainwindow.h \
+        mon/mcm.h \
         phi_mult.h \
         qcustomplot.h \
         reactionsolver.h \

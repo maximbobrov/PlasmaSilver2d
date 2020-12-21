@@ -8,11 +8,17 @@
 #include <QDebug>
 #include <stdio.h>
 #include <reactionsolver.h>
+#include "mon/mcm.h"
 
 #define NX 257
 #define NY 257
 
-
+void init_mcm()
+{
+    monte::start();                /* Allocate arrays and initailze */
+    monte::setrho();               /* Set initial charge density    */
+    (*monte::fields_ptr)();        /* Initialize field arrays       */
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -153,6 +159,7 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("PlasmaSolver");
     m_animStopped=true;
     initData();
+    init_mcm();
 }
 
 MainWindow::~MainWindow()
@@ -427,6 +434,7 @@ bool MainWindow::solveNewton()
 void MainWindow::simulateData(bool status)
 {
     m_animStopped=false;
+
     int saveNum = (m_textEndTime->text().toDouble() - m_textStartTime->text().toDouble()) / m_textDeltaTime->text().toDouble();
     if(saveNum< 20)
         saveNum = 1;
@@ -434,6 +442,8 @@ void MainWindow::simulateData(bool status)
         saveNum = saveNum * 1.0 / 20.0;
     while(!m_animStopped &&  m_time < (m_textEndTime->text().toDouble() - m_textStartTime->text().toDouble()) - saveNum * m_textDeltaTime->text().toDouble())
     {
+        for (int i=0;i<10;i++)
+            monte::solve_mcm();
         m_time += m_textStartTime->text().toDouble() + saveNum * m_textDeltaTime->text().toDouble();
         updateData(saveNum);
 
