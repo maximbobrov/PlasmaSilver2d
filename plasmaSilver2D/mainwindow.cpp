@@ -440,20 +440,21 @@ void MainWindow::simulateData(bool status)
         saveNum = 1;
     else
         saveNum = saveNum * 1.0 / 20.0;
-    while(!m_animStopped &&  m_time < (m_textEndTime->text().toDouble() - m_textStartTime->text().toDouble()) - saveNum * m_textDeltaTime->text().toDouble())
+
+    while(!m_animStopped /*&&  m_time < (m_textEndTime->text().toDouble() - m_textStartTime->text().toDouble()) - saveNum * m_textDeltaTime->text().toDouble()*/)
     {
         for (int i=0;i<10;i++)
             monte::solve_mcm();
-        m_time += m_textStartTime->text().toDouble() + saveNum * m_textDeltaTime->text().toDouble();
+        /*m_time += m_textStartTime->text().toDouble() + saveNum * m_textDeltaTime->text().toDouble();
         updateData(saveNum);
 
         saveInStorage();
         m_timeScrollBar->setRange(0, m_storage.size() - 1);
-        m_timeScrollBar->setValue(m_storage.size() - 1);
+        m_timeScrollBar->setValue(m_storage.size() - 1);*/
         replotGraph(m_storage.size()!=0 ? m_storage.size()-1 : 0);
-        QCoreApplication::processEvents();
+        //QCoreApplication::processEvents();
 
-        m_progressBar->setValue(100.0 * (m_time - m_textStartTime->text().toDouble()) / (m_textEndTime->text().toDouble() - m_textStartTime->text().toDouble()));
+        //m_progressBar->setValue(100.0 * (m_time - m_textStartTime->text().toDouble()) / (m_textEndTime->text().toDouble() - m_textStartTime->text().toDouble()));
 
     }
     m_progressBar->setValue(100);

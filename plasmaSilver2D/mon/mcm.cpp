@@ -215,7 +215,7 @@ void start()
     icollisional   = 0;
     ionsp          = 0;
     epsilon        = 1.0;
-    ybc_flag       = DIRICHLET;
+    ybc_flag       = NEUMANN;
 
     /* Read lines until we get to numbers */
     while (fscanf(InputDeck,"%d %d %d %lf %lf %lf %lf %lf %lf", &nsp, &ncx, &ncy,
@@ -240,7 +240,8 @@ void start()
 
     while (fscanf(InputDeck, "%d %lf %d %d", &ybc_flag,&temp,&wall_flag,&wall_read_flag) <4)
         fscanf(InputDeck, "%s", aachar);
-
+    ybc_flag       = NEUMANN;
+    xbc_flag       = NEUMANN;
     /*****************************************/
 
     btheta     *= 2*M_PI/360.0;

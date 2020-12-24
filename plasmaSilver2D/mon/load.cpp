@@ -73,7 +73,7 @@ void load(int isp, double initn, int loader, int fill_region, double xleft, doub
     ylen= fncy*(yhigh -ylow)/ylength;
   }
   
-  np[isp]= 0.001 * initn*xlen*ylen*dx*dy*zlength/nc2p/weight[isp];
+  np[isp]= initn*xlen*ylen*dx*dy*zlength/nc2p/weight[isp];
   if (np[isp] > maxnp[isp]) {
     printf("LOAD: too many particles, species %d\n", isp);
     exit(1);
