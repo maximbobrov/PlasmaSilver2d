@@ -660,10 +660,10 @@ void start()
     /*********************************************/
     /* Fixing the face flags for left and right  */
 
-    for(j=0; j<=ncy; j++) {
+    /*for(j=0; j<=ncy; j++) {
         conductor[0][j] = 0;    face[0][j]  = RIGHT; area[0][j]  = dy*zlength;
         conductor[ncx][j]= 0;   face[ncx][j]= LEFT;  area[ncx][j]= dy*zlength;
-    }
+    }*/
 
     /* Fixing the face flags for top and bottom  */
     for(i=1; i<ncx; i++) {

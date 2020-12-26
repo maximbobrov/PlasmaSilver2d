@@ -50,7 +50,7 @@ void fields()
   
   /*********************************************************/
   /*** Solve Poisson's eqn with zero boundary condition  ***/
-  dadi_dt= dadi(dadi_dt, phi_pois, source, 20, tol_pois, 0, 
+  dadi_dt= dadi(dadi_dt, phi_pois, source, 20, tol_pois, 0,
         (double *)NULL, (double *)NULL, (double *)NULL, (double *)NULL);
   
   for (i=0; i< ngx; i++)
@@ -69,11 +69,13 @@ void fields()
     for (i=0; i< ngx; i++)
       for (j=0; j< ngy; j++) phi[i][j] += rhs_phi0*phi_lap_rhs[i][j];
   }
-  /*
-    if(nstrcmax>0)
+
+  //for (j=0; j< ngy; j++) phi[ngx-1][j] = -1000;//phi[ngx-2][j];
+
+    /*if(nstrcmax>0)
     for (i=0; i< ngx; i++)
-      for (j=0; j< ngy; j++) phi[i][j] += phi_intl[i][j];
-  */
+      for (j=0; j< ngy; j++) phi[i][j] += phi_intl[i][j];*/
+
   /**************************************************/
   /*** Calculate the sigma's..                    ***/
   
@@ -349,10 +351,11 @@ void init_fields()
   hdx = 0.5/dx;
   hdy = 0.5/dy;
   
-  if(ybc_flag == NEUMANN)
-    init_dadi_arrays(DIRICHLET, DIRICHLET, NEUMANN, NEUMANN);
-  else if(ybc_flag == DIRICHLET)
-    init_dadi_arrays(DIRICHLET, DIRICHLET, DIRICHLET, DIRICHLET);
+  //if(ybc_flag == NEUMANN)
+    init_dadi_arrays(NEUMANN, NEUMANN, NEUMANN, NEUMANN);
+    //init_dadi_arrays(DIRICHLET, DIRICHLET, NEUMANN, NEUMANN);
+  //else if(ybc_flag == DIRICHLET)
+    //init_dadi_arrays(DIRICHLET, DIRICHLET, DIRICHLET, DIRICHLET);
   
   phi_lhs = (double *)malloc(ngy*sizeof(double));
   phi_rhs = (double *)malloc(ngy*sizeof(double));

@@ -227,7 +227,7 @@ void GLWidget::paintGL()
 
 double scc = 0.0002;
 
-double sizeScale = 30;
+double sizeScale = 20;
          for (int i=0;i<ncx-1;i+=1)
            {
                  glBegin(GL_TRIANGLE_STRIP);
