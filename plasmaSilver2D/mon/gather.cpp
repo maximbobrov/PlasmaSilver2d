@@ -119,7 +119,9 @@ void setrho()
 	Periodic_Smooth(sp_vt[isp],  ncx, ncy);
       }
       else { 
-	TWOD_One_2_One(sp_n[isp],   ncx, ncy);
+    TWOD_One_2_One(sp_n[isp],   ncx, ncy);
+    TWOD_One_2_One(sp_n[isp],   ncx, ncy);
+    TWOD_One_2_One(sp_n[isp],   ncx, ncy);
 	TWOD_One_2_One(sp_vx0[isp], ncx, ncy);
 	TWOD_One_2_One(sp_vy0[isp], ncx, ncy);
 	TWOD_One_2_One(sp_vz0[isp], ncx, ncy);

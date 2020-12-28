@@ -487,7 +487,7 @@ void adi(double **uadi, double **s, double del_t, int bound_flag,
             r_x[i] = (dthi*uadi[i][j] +s[i][j])*conductor[i][j]
                     -( a_ygeom[i][j]*uadi[i][jm1]
                        -b_ygeom[i][j]*uadi[i][j]
-                       +c_ygeom[i][j]*uadi[i][jp1]) +  sin(t * 6.28e8) * dthi*phi_intl[i][j]*(1-bound_flag);
+                       +c_ygeom[i][j]*uadi[i][jp1]) +  sin(t * 6.28e7) * dthi*phi_intl[i][j]*(1-bound_flag);
         }
 
         /* Solve tridiagonal system. */
@@ -520,7 +520,7 @@ void adi(double **uadi, double **s, double del_t, int bound_flag,
             r_y[j] = (dthi*ustar[i][j] +s[i][j])*conductor[i][j]
                     -( a_xgeom[i][j]*ustar[im1][j]
                        -b_xgeom[i][j]*ustar[i][j]
-                       +c_xgeom[i][j]*ustar[ip1][j]) + sin(t * 6.28e8) * dthi*phi_intl[i][j]*(1-bound_flag);
+                       +c_xgeom[i][j]*ustar[ip1][j]) + sin(t * 6.28e7) * dthi*phi_intl[i][j]*(1-bound_flag);
         }
 
         /* Solve tridiagonal system. */

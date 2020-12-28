@@ -29,9 +29,9 @@ void move(int isp)
     x[isp][n] += vx[isp][n];
     y[isp][n] += vy[isp][n];
 
-    if(/*eps_array[i][j]/EPS0 > 1 &&*/ y[isp][n]< 10/*strc[1].yu*/)
+    if(/*eps_array[i][j]/EPS0 > 1 &&*/ y[isp][n]< 3/*strc[1].yu*/)
     {
-       y[isp][n] = 10;//strc[1].yu;
+       y[isp][n] = 3;//strc[1].yu;
        vy[isp][n] = 0;
     }
   }

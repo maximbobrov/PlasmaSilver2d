@@ -225,17 +225,17 @@ void GLWidget::paintGL()
     glColor3f(1,0,0);
 
 
-double scc = 0.0002;
+double scc = 0.1;//0.0002;
 
-double sizeScale = 20;
+double sizeScale = 10;
          for (int i=0;i<ncx-1;i+=1)
            {
                  glBegin(GL_TRIANGLE_STRIP);
              for (int j=0;j<ncy;j+=1)
                {
-               glColor3f(sc * scc*phi[i][j],-sc *scc*phi[i][j],0);
+               glColor3f(sc * scc*sp_n[1][i][j],-sc *scc*sp_n[1][i][j],0);
              glVertex3f(sizeScale*monte::dx * i  - dx * N_X/2 , sizeScale*monte::dy * j  -  dy *N_Y/2, 0);
-               glColor3f(sc * scc*phi[i+1][j],-sc * scc*phi[i+1][j],0);
+               glColor3f(sc * scc*sp_n[1][i+1][j],-sc * scc*sp_n[1][i+1][j],0);
              glVertex3f(sizeScale*monte::dx * (i+1)  - dx * N_X/2 , sizeScale*monte::dy * j  -  dy *N_Y/2, 0);
            }
                      glEnd();
@@ -243,19 +243,19 @@ double sizeScale = 20;
 
 
 
-    glBegin(GL_POINTS);
+    /*glBegin(GL_POINTS);
      for (int i=0;i<np[1];i+=1)
        {
         // printf("x=%e y=%e vx=%e vy=%e \n",x[0][i]*dx,y[0][i],vx[0][i],vy[0][i]);
 double v2=vx[1][i]*vx[1][i]+vy[1][i]*vy[1][i];
 //printf("v2=%e \n",v2);
-           glColor3f(0,0,1.0/*100000 * sc*v2*/);
+           glColor3f(0,0,1.0);
          glVertex3f(sizeScale*monte::x[1][i]*monte::dx  - dx * N_X/2 ,
                        sizeScale*monte::y[1][i]*monte::dy  -  dy *N_Y/2,
                       0 );
        }
     glEnd();
-
+*/
     glBegin(GL_POINTS);
      for (int i=0;i<np[0];i+=1)
        {
