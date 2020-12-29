@@ -43,7 +43,7 @@ void fields()
   for (isp=0; isp< nsp; isp++)
     for (i=0; i<= ncx; i++)
       for (j=0; j<= ncy; j++) {
-	source[i][j]-= q_per_cell[isp]*(sp_n[isp][i][j] +sp_sigma[isp][i][j])/EPS0;
+    source[i][j]-= q_per_cell[isp]*(sp_n[isp][i][j] +sp_sigma[isp][i][j])/EPS0;
 	rho[i][j]   += q_per_cell[isp]*sp_n[isp][i][j];
 	sigma[i][j] += q[isp]*sp_sigma[isp][i][j];
       }

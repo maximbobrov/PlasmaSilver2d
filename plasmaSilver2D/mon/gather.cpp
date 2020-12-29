@@ -111,16 +111,14 @@ void setrho()
     }
     /**** Digitally smooth the species densities in x and y. */
     for (n=0; n<sflag; n++) {
-      if(ybc_flag == PERIODIC){
+     if(ybc_flag == PERIODIC){
 	Periodic_Smooth(sp_n[isp],   ncx, ncy);
 	Periodic_Smooth(sp_vx0[isp], ncx, ncy);
 	Periodic_Smooth(sp_vy0[isp], ncx, ncy);
 	Periodic_Smooth(sp_vz0[isp], ncx, ncy);
 	Periodic_Smooth(sp_vt[isp],  ncx, ncy);
       }
-      else { 
-    TWOD_One_2_One(sp_n[isp],   ncx, ncy);
-    TWOD_One_2_One(sp_n[isp],   ncx, ncy);
+      else {
     TWOD_One_2_One(sp_n[isp],   ncx, ncy);
 	TWOD_One_2_One(sp_vx0[isp], ncx, ncy);
 	TWOD_One_2_One(sp_vy0[isp], ncx, ncy);
@@ -140,7 +138,7 @@ void TWOD_One_2_One(double **matrix, int nx, int ny)
   register int i, j;
   static int init_smth_flag=1;
   static double **temp;
-  
+
   if(init_smth_flag) {
     temp= (double **)malloc((nx+1)*sizeof(double *));
     for(i=0; i<=nx; i++) temp[i]= (double *)malloc((ny+1)*sizeof(double));
@@ -151,41 +149,42 @@ void TWOD_One_2_One(double **matrix, int nx, int ny)
     temp[i][0]= (matrix[i][0] +matrix[i][1])/2;
     for(j=1; j< ny; j++) {
       if(grid_mask[i][j] == 1) {
-	if(face[i][j] == UP || face[i][j] == UL_CORN || face[i][j] == UR_CORN)
-	  temp[i][j]= (matrix[i][j] +matrix[i][j+1])/2;
-	else if(face[i][j] == DOWN || face[i][j] == LL_CORN || face[i][j] == LR_CORN)
-	  temp[i][j]= (matrix[i][j] +matrix[i][j-1])/2;
-	else if(face[i][j] == LEFT || face[i][j] == RIGHT)
-	  temp[i][j]= (matrix[i][j-1] +2*matrix[i][j] +matrix[i][j+1])/4;
-	else
-	  temp[i][j]= matrix[i][j];
+    if(face[i][j] == UP || face[i][j] == UL_CORN || face[i][j] == UR_CORN)
+      temp[i][j]= (matrix[i][j] +matrix[i][j+1])/2;
+    else if(face[i][j] == DOWN || face[i][j] == LL_CORN || face[i][j] == LR_CORN)
+      temp[i][j]= (matrix[i][j] +matrix[i][j-1])/2;
+    else if(face[i][j] == LEFT || face[i][j] == RIGHT)
+      temp[i][j]= (matrix[i][j-1] +2*matrix[i][j] +matrix[i][j+1])/4;
+    else
+      temp[i][j]= matrix[i][j];
       }
       else
-	temp[i][j]= (matrix[i][j-1] +2*matrix[i][j] +matrix[i][j+1])/4;
+    temp[i][j]= (matrix[i][j-1] +2*matrix[i][j] +matrix[i][j+1])/4;
     }
     temp[i][ny]= (matrix[i][ny] +matrix[i][ny-1])/2;
   }
-  
+
   /********* then do the x pass **********/
   for (j=0; j<=ny; j++) {
     matrix[0][j]= (temp[0][j] +temp[1][j])/2;
     for(i=1; i< nx; i++) {
       if(grid_mask[i][j] == 1) {
-	if(face[i][j] == LEFT || face[i][j] == UL_CORN || face[i][j] == LL_CORN)
-	  matrix[i][j]= (temp[i][j] +temp[i-1][j])/2;
-	else if(face[i][j] == RIGHT || face[i][j] == LR_CORN || face[i][j] == UR_CORN)
-	  matrix[i][j]= (temp[i][j] +temp[i+1][j])/2;
-	else if(face[i][j] == DOWN || face[i][j] == UP)
-	  matrix[i][j]= (temp[i-1][j] +2*temp[i][j] +temp[i+1][j])/4;
-	else
-	  matrix[i][j]= temp[i][j];
+    if(face[i][j] == LEFT || face[i][j] == UL_CORN || face[i][j] == LL_CORN)
+      matrix[i][j]= (temp[i][j] +temp[i-1][j])/2;
+    else if(face[i][j] == RIGHT || face[i][j] == LR_CORN || face[i][j] == UR_CORN)
+      matrix[i][j]= (temp[i][j] +temp[i+1][j])/2;
+    else if(face[i][j] == DOWN || face[i][j] == UP)
+      matrix[i][j]= (temp[i-1][j] +2*temp[i][j] +temp[i+1][j])/4;
+    else
+      matrix[i][j]= temp[i][j];
       }
       else
-	matrix[i][j]= (temp[i-1][j] +2*temp[i][j] +temp[i+1][j])/4;
-    } 
+    matrix[i][j]= (temp[i-1][j] +2*temp[i][j] +temp[i+1][j])/4;
+    }
     matrix[nx][j]= (temp[nx][j] +temp[nx-1][j])/2;
   }
 }
+
 
 /***************************************************************/
 /* Smoothing the array using the 1-2-1 method with the proper   */

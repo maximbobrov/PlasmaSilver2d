@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "pzsolver.h"
+
 
 #define double_CHAR "double"
 #define XG_double_DOUBLE
@@ -114,6 +116,10 @@ extern double **x, **y, **vx, **vy, **vz, *x_array, *y_array, **source, **eps_ar
       **rho, **ex, **ey, **ax, **ay, ***sp_ex, ***sp_ey, **sigma, ***sp_sigma,
       ***sp_vx0, ***sp_vy0, ***sp_vz0, ***sp_vt, **phi_intl;
 
+extern  double **sp_n_sm;
+
+extern pzSolver* pz_solver;
+
 extern int   nbin[SIDES][NSMAX];
 extern double emin[SIDES][NSMAX], de[SIDES][NSMAX];
 extern double ****fe, ***e_array, ****fth, ***th_array, ***wall_q,
@@ -152,6 +158,7 @@ extern void   (*move_ptr)(int isp);
 /*******************************************/
 /*     Global functions                    */
 
+void updateEforPz();
 void      mcc(int isp);
 void      boundary(int isp), wall_diagnos(int isp);
 void      init_dadi_arrays(int x0_flag, int xl_flag, int y0_flag, int ly_flag);

@@ -1,7 +1,7 @@
 argon.inp: Argon RF discharge
 
 -nsp---ncx---ncy---nc2p---dt[s]---xlength[m]--ylength[m]--zlength[m]--epsilonr-
-  2     160   60    1e6  5.600894e-11 0.08       0.03        0.1         1.0
+  2     160   60    5e8  5.600894e-11 0.08       0.03        0.1         1.0
 
 -lhs--length[m]--dc[V|Amp]---ac[V|Amp]--f0[Hz]--theta0[D]--extC[F]--gapsize[nc]-
   0     0.03      0.0          0.0       13.56e6     0.0    1e-9      0 
@@ -13,7 +13,7 @@ argon.inp: Argon RF discharge
    0.0            0.0       0.0         0.0     2048     4      0.001      3
 
 -e_collisional--i_collisional--ion species--Gpressure[Torr]--GTemp[eV]--
- 1              1               2              0.5              0.026
+ 1              1               2              10.5              0.026
 
 -bc_flag(0=x,y Dirichlet; 1=x D, y Periodic)------local----wall-----wallread--
  0                                                 0        0        0
@@ -27,7 +27,7 @@ ELECTRONS (Species 1)
       0             1         0.0    0.03    0.0    0.06
 
 Initial Loader---Ninit[m^-3]---E0x[eV]---E0y[eV]---E0z[m/s]---T[eV]--
-                  5.0e12        0.0         0.0       0.0      2.5
+                  1.0e15        0.0         0.0       0.0      2.5
 
 LHS Injection----JxL[#/m^2-s]--E0x[eV]---E0y[eV]---E0z[m/s]---T[eV]--
                   0             0.0        0.0       0.0       2.5  
@@ -50,7 +50,7 @@ ARGON (Species 2)
       0             1         0.0    0.03     0.0    0.06
 
 Initial Loader---Ninit[m^-3]---E0x[eV]---E0y[eV]---E0z[m/s]---T[eV]--
-                  5.0e12        0.0       0.0     0.0        0.04
+                  1.0e15       0.0       0.0     0.0        0.04
 
 LHS Injection----JxL[#/m^2-s]--E0x[eV]---E0y[eV]---E0z[m/s]---T[eV]--
                   0.0              0.0       0.0     0.0       0.0
@@ -69,4 +69,4 @@ RHS Injection----JxR[#/m^2-s]--E0x[eV]---E0y[eV]---E0z[m/s]---T[eV]--
  	-struct
  0     1  160    3  100.       0.0        bbb
  	-struct
- 0     0   160    1  0.0       1000.0        ccc
+ 0     0   160    1  0.0        3000.0        ccc

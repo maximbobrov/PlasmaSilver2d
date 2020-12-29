@@ -1,5 +1,6 @@
 #include "mcm.h"
 
+
 namespace monte{
 char  name[NSMAX][50], strc_name[NSTRCTYPEMAX][50];
 
@@ -33,6 +34,10 @@ double **x, **y, **vx, **vy, **vz, *x_array, *y_array, **source, **eps_array, **
 ***sp_n, ***sp_n_0, ***sp_n_k, ***sp_n_mcc, ***sp_n_ave, ***sp_n_ave_show,
 **rho, **ex, **ey, **ax, **ay, ***sp_ex, ***sp_ey, **sigma, ***sp_sigma,
 ***sp_vx0, ***sp_vy0, ***sp_vz0, ***sp_vt, **phi_intl;
+
+double **sp_n_sm;
+
+pzSolver* pz_solver;
 
 int   nbin[SIDES][NSMAX];
 double emin[SIDES][NSMAX], de[SIDES][NSMAX];
@@ -199,6 +204,7 @@ void start()
     register int i, j, k, n, isp, ix, iy;
     double temp, ttmag;
     char aachar[80], c;
+    pz_solver= new pzSolver();
 
     /***********************************************/
     /* Open files and read in "general" parameters */
@@ -410,6 +416,15 @@ void start()
                 sp_vz0[isp][i][j]= sp_vt[isp][i][j]= 0.0;
                 sp_ex[isp][i][j] = sp_ey[isp][i][j] = sp_sigma[isp][i][j]= 0.0;
             }
+        }
+    }
+
+
+    sp_n_sm = (double **)malloc(ngx*sizeof(double *));
+    for(i=0; i<=ncx; i++) {
+        sp_n_sm[i] = (double *)malloc(ngy*sizeof(double));
+        for(j=0; j<=ncy; j++) {
+            sp_n_sm[i][j] = sp_n[1][i][j];
         }
     }
 
@@ -792,7 +807,40 @@ void start()
 
 }
 
+void updateEforPz()
+{
+    for (int i=0;i<pz_solver->m_p_num;i++)
+    {
+        double x,ym, y0,yp;
+        x=pz_solver->m_p[i].r.x;
+        ym=pz_solver->m_p[i].r.y+pz_solver->m_p[i].dl*0.22;
+        y0=pz_solver->m_p[i].r.y;
+        yp=pz_solver->m_p[i].r.y+pz_solver->m_p[i].dl*0.5;
+        int xidx = x/monte::dx;
+        int yidx = yp/monte::dy;
+        vec2 Ep0 = pz_solver->getEdepol(x,y0);
+        pz_solver->m_p[i].E =(1000 * ey[ xidx][ yidx] + Ep0.y)*100;
 
+
+        //printf("pppp=%e \n",pz_solver->m_p[i].E);//<<endl;
+        /*vec2 Em = m_Esolver->getE(x,ym);
+                vec2 Epm = m_pzSolver->getEdepol(x,ym);
+                vec2 Eem = m_elecSolver->getEe(x,ym);
+
+                vec2 E0 = m_Esolver->getE(x,y0);
+                vec2 Ep0 = m_pzSolver->getEdepol(x,y0);
+                vec2 Ee0 = m_elecSolver->getEe(x,y0);
+
+                vec2 Ep = m_Esolver->getE(x,yp);
+                vec2 Epp = m_pzSolver->getEdepol(x,yp);
+                vec2 Eep = m_elecSolver->getEe(x,yp);
+                m_pzSolver->m_p[i].E_elec = (Eem.y +Ee0.y+Eep.y)/3;//0.95 * m_pzSolver->m_p[i].E_elec + 0.05 * Ee.y;
+                m_pzSolver->m_p[i].E = ((Em.y + Epm.y+E0.y + Ep0.y+ Ep.y + Epp.y)/3.0 + m_pzSolver->m_p[i].E_elec);*/
+        //m_pzSolver->m_p[i].E*=3;
+        /*if(i%10 == 0)
+                      //printf("IIIIII=%d EEEEEE=%e\n", i, m_pzSolver->m_p[i].E);*/
+    }
+}
 /***************************************************************/
 
 void solve_mcm()
@@ -830,6 +878,10 @@ void solve_mcm()
             }
             else {
                 TWOD_One_2_One(sp_n[isp],   ncx, ncy);
+                /*TWOD_One_2_One(sp_n[isp],   ncx, ncy);
+                TWOD_One_2_One(sp_n[isp],   ncx, ncy);
+                TWOD_One_2_One(sp_n[isp],   ncx, ncy);
+                TWOD_One_2_One(sp_n[isp],   ncx, ncy);*/
                 TWOD_One_2_One(sp_vx0[isp], ncx, ncy);
                 TWOD_One_2_One(sp_vy0[isp], ncx, ncy);
                 TWOD_One_2_One(sp_vz0[isp], ncx, ncy);
@@ -837,6 +889,12 @@ void solve_mcm()
             }
         }
     }
+
+    for(i=0; i<=ncx; i++)
+        for(j=0; j<=ncy; j++)
+            sp_n_sm[i][j]= sp_n[1][i][j];
+
+
 
     /**************************************************/
     /** Now do the field solve and finally, calculate */
@@ -846,9 +904,13 @@ void solve_mcm()
     for(isp=0; isp<nsp; isp++)
         for(i=0; i <= ncx; i++)
             for(j=0; j <= ncy; j++) {
-                sp_ex[isp][i][j] += ex[i][j];
-                sp_ey[isp][i][j] += ey[i][j];
+                vec2 ee=pz_solver->getEdepol(i*monte::dx,j*monte::dy);
+                sp_ex[isp][i][j] += ex[i][j]+ee.x*10000.0;
+                sp_ey[isp][i][j] += ey[i][j]+ee.y*10000.0;
             }
+    updateEforPz();
+
+    pz_solver->solvePz(10);
 
 }
 }

@@ -43,6 +43,7 @@ SOURCES += \
         mon/mcm.cpp \
         mon/move.cpp \
         phi_mult.cpp \
+        pzsolver.cpp \
         qcustomplot.cpp \
         reactionsolver.cpp \
         simulationdata.cpp \
@@ -56,6 +57,7 @@ HEADERS += \
         mainwindow.h \
         mon/mcm.h \
         phi_mult.h \
+        pzsolver.h \
         qcustomplot.h \
         reactionsolver.h \
         simulationdata.h \
