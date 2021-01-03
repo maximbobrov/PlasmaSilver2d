@@ -38,6 +38,7 @@ void fields()
       rho[i][j] = rhoback;
       sigma[i][j] = 0.0;
       source[i][j]= rhoback;
+      source[i][j]+= 0.0002 * (Py_[i][j+1] - Py_[i][j]) / (dy * EPS0);
     }
   
   for (isp=0; isp< nsp; isp++)

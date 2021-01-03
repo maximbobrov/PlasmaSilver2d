@@ -225,7 +225,7 @@ void GLWidget::paintGL()
     glColor3f(1,0,0);
 
 
-    double scc = 0.000001;//0.0002;
+    double scc = 0.0000001;//0.0002;
 
 
     TWOD_One_2_One(sp_n_sm,   ncx, ncy);
@@ -254,7 +254,22 @@ void GLWidget::paintGL()
         glEnd();
     }*/
 
+
+   scc = 0.1000001;//0.0002;
     for (int i=0;i<ncx-1;i+=1)
+    {
+        glBegin(GL_TRIANGLE_STRIP);
+        for (int j=0;j<ncy;j+=1)
+        {
+            glColor3f(sc * scc*Py_[i][j],-sc *scc*Py_[i][j],0);
+            glVertex3f(sizeScale*monte::dx * i  - dx * N_X/2 , sizeScale*monte::dy * j  -  dy *N_Y/2, 0);
+            glColor3f(sc * scc*Py_[i+1][j],-sc * scc*Py_[i+1][j],0);
+            glVertex3f(sizeScale*monte::dx * (i+1)  - dx * N_X/2 , sizeScale*monte::dy * j  -  dy *N_Y/2, 0);
+        }
+        glEnd();
+    }
+
+    /*for (int i=0;i<ncx-1;i+=1)
     {
         glBegin(GL_TRIANGLE_STRIP);
         for (int j=0;j<ncy;j+=1)
@@ -266,16 +281,18 @@ void GLWidget::paintGL()
         }
         glEnd();
     }
+*/
 
-
-    glBegin(GL_TRIANGLE_STRIP);
+   /* glBegin(GL_TRIANGLE_STRIP);
     for (int i=0;i<pz_solver->m_p_num;i++)
     {
         glColor3f(sc * pz_solver->m_p[i].p/0.26,-sc * pz_solver->m_p[i].p/0.26,0);
         glVertex2f(sizeScale *pz_solver->m_p[i].r.x - dx * N_X/2 ,sizeScale *pz_solver->m_p[i].r.y -sizeScale *pz_solver->m_p[i].dl*0.5-  dy *N_Y/2);
         glVertex2f(sizeScale *pz_solver->m_p[i].r.x - dx * N_X/2 ,sizeScale *pz_solver->m_p[i].r.y +sizeScale *pz_solver->m_p[i].dl*0.5-  dy *N_Y/2);
     }
-    glEnd();
+    glEnd();*/
+
+
 
     glBegin(GL_POINTS);
      for (int i=0;i<np[1];i+=1)
@@ -291,7 +308,7 @@ double v2=vx[1][i]*vx[1][i]+vy[1][i]*vy[1][i];
     glEnd();
 
     glBegin(GL_POINTS);
-    for (int i=0;i<np[0];i+=2)
+    for (int i=0;i<np[0];i+=1)
     {
         // printf("x=%e y=%e vx=%e vy=%e \n",x[0][i]*dx,y[0][i],vx[0][i],vy[0][i]);
         double v2=vx[0][i]*vx[0][i]+vy[0][i]*vy[0][i];

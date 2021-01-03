@@ -75,7 +75,7 @@ void   (*move_ptr)(int isp);
 }
 
 namespace monte{
-
+void solve_PY();
 void solve_mcm();
 FILE *InputDeck;
 
@@ -867,7 +867,7 @@ void solve_mcm()
             gather(isp);
             k_count[isp]=0;
         }
-
+        solve_PY();
         k_count[isp]++;
         frac = ((double)k_count[isp])/sp_k[isp];
         for(i=0; i<=ncx; i++)
@@ -1025,12 +1025,12 @@ int jacobi_polynomial(INPUT_PARAM par, poly pol,double** field,double **rhs, int
     poly_new.C[0]+=a;
 
 
-    int j0 =1; //dielectric between this
-    int j1= 6; //
+    int j0 =2; //dielectric between this
+    int j1= 5; //
 
     for (i=1; i<ncx-1; i+=30)
     {
-    printf("i=%d P=%e ey=%e \n",i,Py_[i][5],ey[i][5]);
+    printf("i=%d P=%e ey=%e \n",i,Py_[i][2],ey[i][2]);
     }
 
     for(n=0;n<itn;n++)

@@ -25,17 +25,19 @@ void move(int isp)
     
     vy[isp][n]+= ay[i][j]*w1 +ay[i+1][j]*w2 +ay[i][j+1]*w3 +ay[i+1][j+1]*w4;
     
+    //vx[isp][n] = 0;
+    //vy[isp][n] = 0;
 
     x[isp][n] += vx[isp][n];
     y[isp][n] += vy[isp][n];
 
-    if(/*eps_array[i][j]/EPS0 > 1 &&*/ y[isp][n]< 3/*strc[1].yu*/)
+    if(/*eps_array[i][j]/EPS0 > 1 &&*/ y[isp][n]< 4/*strc[1].yu*/)
     {
-       y[isp][n] = 3;//strc[1].yu;
+       y[isp][n] = 4 /*+ rand() * 0.01 / RAND_MAX*/;//strc[1].yu;
        vy[isp][n] = 0;
 
-     //  x[isp][n] -= vx[isp][n];
-      //  vx[isp][n] = 0;
+       x[isp][n] -= vx[isp][n];
+       vx[isp][n] =  0.0005 -  rand() * 0.001 / RAND_MAX;
     }
   }
 }
