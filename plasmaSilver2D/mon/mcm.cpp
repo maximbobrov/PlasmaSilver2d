@@ -1,5 +1,5 @@
 #include "mcm.h"
-
+#include <string.h>
 
 namespace monte{
 char  name[NSMAX][50], strc_name[NSTRCTYPEMAX][50];
@@ -33,7 +33,7 @@ double **x, **y, **vx, **vy, **vz, *x_array, *y_array, **source, **eps_array, **
 **phi, **phi_lap_lhs, **phi_lap_rhs, **phi_pois, **phi_ave, **phi_ave_show,
 ***sp_n, ***sp_n_0, ***sp_n_k, ***sp_n_mcc, ***sp_n_ave, ***sp_n_ave_show,
 **rho, **ex, **ey, **ax, **ay, ***sp_ex, ***sp_ey, **sigma, ***sp_sigma,
-***sp_vx0, ***sp_vy0, ***sp_vz0, ***sp_vt, **phi_intl;
+***sp_vx0, ***sp_vy0, ***sp_vz0, ***sp_vt, **phi_intl,**Py_,**Py0_,**RHS_p;
 
 double **sp_n_sm;
 
@@ -441,6 +441,10 @@ void start()
     ay      = (double **)malloc(ngx*sizeof(double *));
     sigma   = (double **)malloc(ngx*sizeof(double *));
     eps_array=(double **)malloc(ngx*sizeof(double *));
+    Py_=(double **)malloc(ngx*sizeof(double *));
+    Py0_=(double **)malloc(ngx*sizeof(double *));
+    RHS_p=(double **)malloc(ngx*sizeof(double *));
+
     for(i=0; i<=ncx; i++) {
         rho[i]     = (double *)malloc(ngy*sizeof(double));
         source[i]  = (double *)malloc(ngy*sizeof(double));
@@ -453,10 +457,14 @@ void start()
         ay[i]      = (double *)malloc(ngy*sizeof(double));
         sigma[i]   = (double *)malloc(ngy*sizeof(double));
         eps_array[i]=(double *)malloc(ngy*sizeof(double));
-
+        Py_[i]=(double *)malloc(ngy*sizeof(double));
+        Py0_[i]=(double *)malloc(ngy*sizeof(double));
+        RHS_p[i]=(double *)malloc(ngy*sizeof(double));
         for(j=0; j<=ncy; j++) {
             phi[i][j] = phi_pois[i][j]= phi_intl[i][j]= sigma[i][j] = 0.0;
             eps_array[i][j]= 1.0;
+            Py_[i][j]=Py0_[i][j]=0.0;
+            RHS_p[i][j]=0.0;
         }
     }
 
@@ -904,13 +912,308 @@ void solve_mcm()
     for(isp=0; isp<nsp; isp++)
         for(i=0; i <= ncx; i++)
             for(j=0; j <= ncy; j++) {
-                vec2 ee=pz_solver->getEdepol(i*monte::dx,j*monte::dy);
-                sp_ex[isp][i][j] += ex[i][j]+ee.x*10000.0;
-                sp_ey[isp][i][j] += ey[i][j]+ee.y*10000.0;
+                //vec2 ee=pz_solver->getEdepol(i*monte::dx,j*monte::dy);
+                sp_ex[isp][i][j] += ex[i][j];//+ee.x*10000.0;
+                sp_ey[isp][i][j] += ey[i][j];//+ee.y*10000.0;
             }
-    updateEforPz();
+    //updateEforPz();
 
-    pz_solver->solvePz(10);
+    //pz_solver->solvePz(10);
 
 }
+
+
+
+double calc_poly(poly p, double r, double x) //возвращает значение функции f(x) = x^2-2
+{
+    double sum=0.0;
+    double xn=x;
+    for (int i=0;i<p.order;++i)
+    {
+        sum+=xn*p.C[i];
+        xn*=x;
+    }
+
+       return sum-r;
+}
+
+float calc_d_poly(poly p, double x) //возвращает значение производной
+{
+    double sum=p.C[0];
+    double xn=x;
+    for (int i=0;i<p.order-1;++i)
+    {
+        sum+=xn*p.C[i+1]*(i+2);
+        xn*=x;
+    }
+   return sum;
+}
+
+float calc_d2_poly(poly p, double x) // значение второй производной
+{
+    double sum=2.0*p.C[1];
+    double xn=x;
+    for (int i=0;i<p.order-2;++i)
+    {
+        sum+=xn*p.C[i+1]*(i+2)*(i+3);
+        xn*=x;
+    }
+   return sum;
+}
+
+double solve_poly(poly p,double _x0, double rhs,int itn)
+{
+    double x0,x,xn,eps;// вычисляемые приближения для корня
+    double a, b,deltax;// границы отрезка и необходимая точность
+
+   // deltax=deltax0;
+    x=_x0;
+   /* a=x0-deltax;
+    b=x0+deltax;
+
+    int nn=0;
+    double sucs=f(a)*f(b);
+    while ((sucs>0)&&(nn<10)) // если знаки функции на краях отрезка одинаковы
+    {
+        deltax=deltax*2;
+        a=x0-deltax;
+        b=x0+deltax;
+        nn++;
+        sucs=f(a)*f(b);
+    }
+
+    if (sucs>0)
+    {
+        printf("DIVERGENCEE in POLY \n",)
+        return -1e30
+    }
+*/
+    for (int i=0; i<itn; ++i)
+    {
+      x = x-calc_poly(p,rhs,x)/calc_d_poly(p,x); // считаем первое приближение
+    }
+
+       // printf("x = %lf f(x)=%e \n",x*1000.0,calc_poly(p,rhs,x));
+
+    return x;
+
+}
+
+
+int jacobi_polynomial(INPUT_PARAM par, poly pol,double** field,double **rhs, int itn)
+{
+    int i,j,n;
+    double res=0;
+
+    //static poly pol_new[N_X][N_Y];
+
+    poly poly_new;
+
+    double a,b_p,b_m,c_p,c_m;
+
+    a=par.a;//((2.0)/(dx*dx)+2.0/(dy*dy));
+    b_p=par.bp;//-1.0/(dx*dx);
+    b_m=par.bm;//-1.0/(dx*dx);
+    c_p=par.cp;//-1.0/(dy*dy);
+    c_m=par.cm;//-1.0/(dy*dy);
+
+    static double rhs_[600][600]; //careful here :)
+
+//field_x*a+....+pol*fieldx^..=rhs
+
+    poly_new=pol;
+    poly_new.C[0]+=a;
+
+
+    int j0 =1; //dielectric between this
+    int j1= 6; //
+
+    for (i=1; i<ncx-1; i+=30)
+    {
+    printf("i=%d P=%e ey=%e \n",i,Py_[i][5],ey[i][5]);
+    }
+
+    for(n=0;n<itn;n++)
+    {
+        for (i=1; i<ncx-1; i++)
+        {
+            //field[i][0]=1;
+            for (j=j0+1; j<j1-1; j++)
+            {
+                //p[i][j]=0;
+
+                rhs_[i][j]=rhs[i][j]-(b_p*field[i+1][j]+b_m*field[i-1][j]+c_p*field[i][j+1]+c_m*field[i][j-1]);
+
+                field[i][j]=field[i][j]*0.7+0.3*solve_poly(poly_new,field[i][j],rhs_[i][j],4);//(rhs[i][j]-(b_p*field[i+1][j]+b_m*field[i-1][j]+c_p*field[i][j+1]+c_m*field[i][j-1]))/a;
+            }
+        }
+
+        //0--fixed value, 1--fixed gradient,2 --cyclic, 3 --init
+        for (int j=j0; j< j1; j++)
+        {
+            if (par.w_bc_type==0)//fixed_value
+                field[0][j]=par.w_bc_val;
+            if (par.w_bc_type==1)//fixed_gradient
+                field[0][j]=field[1][j];//-dx*par.w_bc_val;
+            if (par.w_bc_type==2)//cyclic
+                field[0][j]=field[ncx-2][j];
+            // if (par.w_bc_type==3)// init
+
+            if (par.e_bc_type==0)//fixed_value
+                field[ncx-1][j]=par.e_bc_val;
+            if (par.e_bc_type==1)//fixed_gradient
+                field[ncx-1][j]=field[ncx-2][j]+dx*par.e_bc_val;
+            if (par.e_bc_type==2)//cyclic
+                field[ncx-1][j]=field[1][j];
+            // if (par.e_bc_type==3)// init
+        }
+
+        for (int i=0; i<ncx; i++ )
+        {
+            if (par.n_bc_type==0)//fixed_value
+                field[i][j1-1]=par.n_bc_val;
+            if (par.n_bc_type==1)//fixed_gradient
+                field[i][j1-1]=field[i][j1-2]+dy*par.n_bc_val;
+            if (par.n_bc_type==2)//cyclic
+                field[i][j1-1]=field[i][j0+1];
+            if (par.n_bc_type==5)//zero div
+                field[i][j1-1]=field[i+1][j1-1]-dx*rhs[i][j1-1];
+            //  if (par.n_bc_type==3)// init
+
+            if (par.s_bc_type==0)//fixed_value
+                field[i][j0]=par.s_bc_val;
+            if (par.s_bc_type==1)//fixed_gradient
+                field[i][j0]=field[i][j0+1]-dy*par.s_bc_val;
+            if (par.s_bc_type==2)//cyclic
+                field[i][j0]=field[i][j1-1];
+            if (par.s_bc_type==5)//zero div
+                field[i][j0]=field[i+1][j0]-dx*rhs[i][j0];
+           // j=N_Y_DIEL-1;
+           // Py_[i][j]=Py_[i][j-1] -(Px_[i+1][j]-Px_[i][j])/(1.0*dx)*(1.0*dy);
+            //Py_[i][j]=0.5*(Py_[i][j+1]+Py_[i][j-1]);
+
+          /* j=1;
+            Py_[i][j-1]=Py_[i][j+1] +(Px_[i+1][j]-Px_[i-1][j])/(2.0*dx)*(2.0*dy);
+            Py_[i][j]=0.5*(Py_[i][j+1]+Py_[i][j-1]);*/
+        }
+    }
+
+    return 0;
+}
+
+
+void solve_PY()
+{
+    INPUT_PARAM par_ferr;
+    double kap=1.38e-10;
+    par_ferr.a=(1.0/dt)+(kap*2.0/(dx*dx) + kap*2.0/(dy*dy));
+    par_ferr.bp=-kap/(dx*dx);
+    par_ferr.bm=-kap/(dx*dx);
+    par_ferr.cp=-kap/(dy*dy);
+    par_ferr.cm=-kap/(dy*dy);
+
+    par_ferr.w_bc_type=1;
+    par_ferr.e_bc_type=1;
+    par_ferr.n_bc_type=1;
+    par_ferr.s_bc_type=1;
+
+    par_ferr.w_bc_val=0.0;
+    par_ferr.e_bc_val=0.0;
+    par_ferr.n_bc_val=0.0;
+    par_ferr.s_bc_val=0.0;
+
+    poly p;
+
+    double alp,bet,gam,T,T0,rh;
+    alp=3.324e5;
+    bet=6.381e8;
+    gam=7.89e9;
+    T=300;
+    T0=381;
+    rh=0.0;
+
+    p.order=5;
+    p.C[0]=2*alp*(T-T0);//+1/EPS0;//(T-T0); //x
+    p.C[1]=0.0;         //xx
+    p.C[2]=-4.0*bet;   //xxx
+    p.C[3]=0.0;        //x^4
+    p.C[4]=6.0*gam;
+
+    for (int i=1; i<ncx-1; i++)
+    {
+        for (int j=1; j<ncy-1; j++)
+        {
+
+            RHS_p[i][j]= 5000.0*ey[i][j]+Py0_[i][j]/dt;
+
+        }
+    }
+
+    //  printf("emin=%e emax=%e \n",emin,emax);
+
+    jacobi_polynomial( par_ferr, p,Py_,RHS_p, 5);
+
+    for (int i=1; i<ncx-1; i++)
+    {
+        for (int j=1; j<ncy-1; j++)
+        {
+            Py0_[i][j]=Py_[i][j];
+        }
+    }
+
+}
+
+
+
+
+void solve_landau(double d_t) //landau dipole theory in fixed external field
+{
+    poly p;
+    double alp,bet,gam,T,T0,rh;
+    alp=3.324e5;
+    bet=6.381e8;
+    gam=7.89e9;
+    T=300;
+    T0=381;
+    rh=0.0;
+
+    double x1=0;
+    double x0=0;
+    //double d_t=1e-11;
+    double E0=-1e5;
+    double E;
+    for (int i=0;i<10000;i++)
+    {
+        rh=E0+x0/d_t;
+
+        p.order=5;
+        p.C[0]=2*alp*(T-T0)+1.0/d_t +1/EPS0; //x
+        p.C[1]=0.0;         //xx
+        p.C[2]=-4.0*bet;   //xxx
+        p.C[3]=0.0;        //x^4
+        p.C[4]=6.0*gam;
+
+        x1=solve_poly(p,x1, rh,10);
+        x0=x1;
+        if (i%10==0)
+            printf("t=%e P=%e E=%e \n",i*d_t,x1,(E0-x1/EPS0));
+    }
+
+    printf("now exact:--- \n");
+    rh=E0;
+
+    p.order=5;
+    p.C[0]=2*alp*(T-T0) +1/EPS0; //x
+    p.C[1]=0.0;         //xx
+    p.C[2]=-4.0*bet;   //xxx
+    p.C[3]=0.0;        //x^4
+    p.C[4]=6.0*gam;
+
+    x1=solve_poly(p,x1, rh,100);
+        printf("P_exact=%e E=%e poly=%e \n",x1,(E0-x1/EPS0),calc_poly(p,rh,x1));
+
+
+}
+
+
 }

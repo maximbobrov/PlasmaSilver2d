@@ -114,7 +114,7 @@ extern double **x, **y, **vx, **vy, **vz, *x_array, *y_array, **source, **eps_ar
       **phi, **phi_lap_lhs, **phi_lap_rhs, **phi_pois, **phi_ave, **phi_ave_show,
       ***sp_n, ***sp_n_0, ***sp_n_k, ***sp_n_mcc, ***sp_n_ave, ***sp_n_ave_show,
       **rho, **ex, **ey, **ax, **ay, ***sp_ex, ***sp_ey, **sigma, ***sp_sigma,
-      ***sp_vx0, ***sp_vy0, ***sp_vz0, ***sp_vt, **phi_intl;
+      ***sp_vx0, ***sp_vy0, ***sp_vz0, ***sp_vt, **phi_intl,**Py_,**Py0_,**RHS_p;
 
 extern  double **sp_n_sm;
 

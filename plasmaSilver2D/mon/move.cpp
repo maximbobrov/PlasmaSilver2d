@@ -33,6 +33,9 @@ void move(int isp)
     {
        y[isp][n] = 3;//strc[1].yu;
        vy[isp][n] = 0;
+
+     //  x[isp][n] -= vx[isp][n];
+      //  vx[isp][n] = 0;
     }
   }
 }
