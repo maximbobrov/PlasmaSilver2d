@@ -225,7 +225,7 @@ void GLWidget::paintGL()
     glColor3f(1,0,0);
 
 
-    double scc = 0.0000001;//0.0002;
+    double scc = 0.001;//0.0002;
 
 
     TWOD_One_2_One(sp_n_sm,   ncx, ncy);
@@ -239,9 +239,9 @@ void GLWidget::paintGL()
 
 
 
-    double sizeScale = 10;
+    double sizeScale = 25;
 
-   /* for (int i=0;i<ncx-1;i+=1)
+    /*for (int i=0;i<ncx-1;i+=1)
     {
         glBegin(GL_TRIANGLE_STRIP);
         for (int j=0;j<ncy;j+=1)
@@ -255,8 +255,8 @@ void GLWidget::paintGL()
     }*/
 
 
-   scc = 0.1000001;//0.0002;
-    for (int i=0;i<ncx-1;i+=1)
+   scc = 0.0000001;//0.0002;
+    /*for (int i=0;i<ncx-1;i+=1)
     {
         glBegin(GL_TRIANGLE_STRIP);
         for (int j=0;j<ncy;j+=1)
@@ -267,9 +267,9 @@ void GLWidget::paintGL()
             glVertex3f(sizeScale*monte::dx * (i+1)  - dx * N_X/2 , sizeScale*monte::dy * j  -  dy *N_Y/2, 0);
         }
         glEnd();
-    }
+    }*/
 
-    /*for (int i=0;i<ncx-1;i+=1)
+    for (int i=0;i<ncx-1;i+=1)
     {
         glBegin(GL_TRIANGLE_STRIP);
         for (int j=0;j<ncy;j+=1)
@@ -281,7 +281,7 @@ void GLWidget::paintGL()
         }
         glEnd();
     }
-*/
+
 
    /* glBegin(GL_TRIANGLE_STRIP);
     for (int i=0;i<pz_solver->m_p_num;i++)
@@ -294,7 +294,7 @@ void GLWidget::paintGL()
 
 
 
-    glBegin(GL_POINTS);
+   /* glBegin(GL_POINTS);
      for (int i=0;i<np[1];i+=1)
        {
         // printf("x=%e y=%e vx=%e vy=%e \n",x[0][i]*dx,y[0][i],vx[0][i],vy[0][i]);
@@ -305,7 +305,7 @@ double v2=vx[1][i]*vx[1][i]+vy[1][i]*vy[1][i];
                        sizeScale*monte::y[1][i]*monte::dy  -  dy *N_Y/2,
                       0 );
        }
-    glEnd();
+    glEnd();*/
 
     glBegin(GL_POINTS);
     for (int i=0;i<np[0];i+=1)

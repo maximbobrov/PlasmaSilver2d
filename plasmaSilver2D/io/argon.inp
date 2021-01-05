@@ -1,19 +1,19 @@
 argon.inp: Argon RF discharge
 
 -nsp---ncx---ncy---nc2p---dt[s]---xlength[m]--ylength[m]--zlength[m]--epsilonr-
-  2     160   60    5e6  5.600894e-11 0.08       0.03        0.1         1.0
+  2     140   60    1e3  2.600894e-11 0.035       0.015        0.1         1.0
 
 -lhs--length[m]--dc[V|Amp]---ac[V|Amp]--f0[Hz]--theta0[D]--extC[F]--gapsize[nc]-
-  0     0.03      0.0          0.0       13.56e6     0.0    1e-9      0 
+  0     0.015      0.0          0.0       13.56e6     0.0    1e-9      0 
 
 -rhs--length[m]--dc[V|Amp]---ac[V|Amp]--f0[Hz]--theta0[D]--extC[F]--gapsize[nc]-
- 0      0.03     3200.0          0.0        13.56e6   0.0        1.0        0
+ 0      0.015     3200.0          0.0        13.56e6   0.0        1.0        0
 
 -rhoback[C/m^3]--bmag[T]--btheta[D]--bphi[D]---nfft---sflag--tol_pois--strc_max-
    0.0            0.0       0.0         0.0     2048     4      0.001      3
 
 -e_collisional--i_collisional--ion species--Gpressure[Torr]--GTemp[eV]--
- 1              1               2              0.005              0.026
+ 1              1               2              0.5              0.026
 
 -bc_flag(0=x,y Dirichlet; 1=x D, y Periodic)------local----wall-----wallread--
  0                                                 0        0        0
@@ -27,7 +27,7 @@ ELECTRONS (Species 1)
       0             1         0.0    0.03    0.0    0.06
 
 Initial Loader---Ninit[m^-3]---E0x[eV]---E0y[eV]---E0z[m/s]---T[eV]--
-                  1.0e11       0.0         0.0       0.0      2.5
+                  1.0e10      0.0         0.0       0.0      2.5
 
 LHS Injection----JxL[#/m^2-s]--E0x[eV]---E0y[eV]---E0z[m/s]---T[eV]--
                   0             0.0        0.0       0.0       2.5  
@@ -50,7 +50,7 @@ ARGON (Species 2)
       0             1         0.0    0.03     0.0    0.06
 
 Initial Loader---Ninit[m^-3]---E0x[eV]---E0y[eV]---E0z[m/s]---T[eV]--
-                  1.0e-15       0.0       0.0     0.0        0.04
+                  1.0e12       0.0       0.0     0.0        0.04
 
 LHS Injection----JxL[#/m^2-s]--E0x[eV]---E0y[eV]---E0z[m/s]---T[eV]--
                   0.0              0.0       0.0     0.0       0.0
@@ -62,11 +62,11 @@ RHS Injection----JxR[#/m^2-s]--E0x[eV]---E0y[eV]---E0z[m/s]---T[eV]--
     200        0.0       1.00      200        0.0       1.00
 
 --secondary----wall_sec----lhs_sec----rhs_sec----grid_sec--
-     0            0.0        0.0        0.0         0.0
+     1            0.25        0.0        0.0         0.25
 	 
 	-struct
- 0     6   40    8  0.0       0.0        aaa
+ 0     2   20    3  0.0       0.0        aaa
   	-struct
- 0     1  160    4  100.0       0.0        bbb
+ 0     1  140    2  2000.0       0.0        bbb
  	-struct
- 0     0   160    1  0.0        30.0        ccc
+ 0     0   140    1  0.0        3000.0        ccc

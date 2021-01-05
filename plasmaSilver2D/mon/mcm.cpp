@@ -857,8 +857,10 @@ void solve_mcm()
     double frac;
 
     t += dt;
+    printf("t=%e\n",t);
     for(isp=0; isp<nsp; isp++) {
-        if(!(k_count[isp]%sp_k[isp])) {
+        //if(!(k_count[isp]%sp_k[isp]))
+        {
             it[isp]++;
             (*move_ptr)(isp);
             boundary(isp);
@@ -867,7 +869,7 @@ void solve_mcm()
             gather(isp);
             k_count[isp]=0;
         }
-        solve_PY();
+        //solve_PY();
         k_count[isp]++;
         frac = ((double)k_count[isp])/sp_k[isp];
         for(i=0; i<=ncx; i++)
