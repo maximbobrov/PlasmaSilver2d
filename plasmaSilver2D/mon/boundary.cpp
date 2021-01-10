@@ -122,7 +122,7 @@ void boundary(int isp)
             /*****  Particle has crossed the TOP boundary  ****/
             else if (y[isp][i] >= fncy) {
 
-                //if(ybc_flag == DIRICHLET)
+                if(ybc_flag == DIRICHLET)
                 {
                     /**** Inject a secondary *****/
                     /*if(sec_flag[isp] && frand() < wall_sec[isp])
@@ -137,17 +137,16 @@ void boundary(int isp)
                     i--;
                     np[isp]--;
                 }
-                /*else if(ybc_flag == NEUMANN) {
-      if(frand() <= REFLECTION_RATIO) {
+                else if(ybc_flag == NEUMANN) {
+      //if(frand() <= REFLECTION_RATIO)
+      {
         vy[isp][i] *= -1.0;
         if(bmag > 0.0) y[isp][i] += dtdy[isp]*vy[isp][i];
         else           y[isp][i] += vy[isp][i];
       }
-      else
-        while ((y[isp][i]-=fncy) > fncy);
     }
     else
-      while ((y[isp][i]-=fncy) > fncy);*/
+      while ((y[isp][i]-=fncy) > fncy);
             }
             /*****  Particle has crossed the BOTTOM boundary  ****/
             else if (y[isp][i] <= 0.0) {

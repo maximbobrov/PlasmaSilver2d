@@ -36,7 +36,8 @@ double **x, **y, **vx, **vy, **vz, *x_array, *y_array, **source, **eps_array, **
 ***sp_vx0, ***sp_vy0, ***sp_vz0, ***sp_vt, **phi_intl,**Py_,**Py0_,**RHS_p;
 
 double **sp_n_sm;
-
+int saveTime=0;
+int fileNumber=0;
 pzSolver* pz_solver;
 
 int   nbin[SIDES][NSMAX];
@@ -683,10 +684,10 @@ void start()
     /*********************************************/
     /* Fixing the face flags for left and right  */
 
-    /*for(j=0; j<=ncy; j++) {
-        conductor[0][j] = 0;    face[0][j]  = RIGHT; area[0][j]  = dy*zlength;
-        conductor[ncx][j]= 0;   face[ncx][j]= LEFT;  area[ncx][j]= dy*zlength;
-    }*/
+    for(j=0; j<=ncy; j++) {
+        /*conductor[0][j] = 0;    face[0][j]  = RIGHT; area[0][j]  = dy*zlength;
+        conductor[ncx][j]= 0;   face[ncx][j]= LEFT;  area[ncx][j]= dy*zlength;*/
+    }
 
     /* Fixing the face flags for top and bottom  */
     for(i=1; i<ncx; i++) {
@@ -815,6 +816,31 @@ void start()
 
 }
 
+void saveInTecplot()
+{
+    fileNumber++;
+    printf("saving file, t=%e\n",t);
+    char str[80];
+    sprintf (str, "output/out_%d_%e.dat",fileNumber, t);
+    FILE *file = fopen(str, "w");
+
+    fprintf(file, "TITLE =\"  \" \n VARIABLES=\"x\" \n \"y\"\n \"z\" \n \"phi\" \n \"ex\" \n \"ey\" \n \"ne\" \n \"ni\" \n  ZONE T=\"  \" \n");
+    fprintf(file," I=%d J=%d K=%d F=POINT \n", ncx, ncy, 1);
+
+    for( int j = 0; j < ncy; j++ ){
+        for( int i = 0; i < ncx; i++ ){
+            double x = i * dx;
+            double y = j * dy;
+            double z = 0;
+
+            fprintf(file,"%lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\t %lf\n",
+                    x, y, z, phi[i][j], ex[i][j], ey[i][j], sp_n[0][i][j], sp_n[1][i][j]);
+        }
+    }
+
+    fclose(file);
+}
+
 void updateEforPz()
 {
     for (int i=0;i<pz_solver->m_p_num;i++)
@@ -857,10 +883,11 @@ void solve_mcm()
     double frac;
 
     t += dt;
-    printf("t=%e\n",t);
+    saveTime++;
+    if(frand()>0.95)
+      printf("t=%e\n",t);
     for(isp=0; isp<nsp; isp++) {
-        //if(!(k_count[isp]%sp_k[isp]))
-        {
+        if(!(k_count[isp]%sp_k[isp])) {
             it[isp]++;
             (*move_ptr)(isp);
             boundary(isp);
@@ -914,14 +941,14 @@ void solve_mcm()
     for(isp=0; isp<nsp; isp++)
         for(i=0; i <= ncx; i++)
             for(j=0; j <= ncy; j++) {
-                //vec2 ee=pz_solver->getEdepol(i*monte::dx,j*monte::dy);
-                sp_ex[isp][i][j] += ex[i][j];//+ee.x*10000.0;
-                sp_ey[isp][i][j] += ey[i][j];//+ee.y*10000.0;
+                sp_ex[isp][i][j] += ex[i][j];
+                sp_ey[isp][i][j] += ey[i][j];
             }
-    //updateEforPz();
 
-    //pz_solver->solvePz(10);
-
+    /*if(saveTime==100){
+        saveTime=0;
+        saveInTecplot();
+    }*/
 }
 
 
@@ -936,7 +963,7 @@ double calc_poly(poly p, double r, double x) //возвращает значен
         xn*=x;
     }
 
-       return sum-r;
+    return sum-r;
 }
 
 float calc_d_poly(poly p, double x) //возвращает значение производной
@@ -948,7 +975,7 @@ float calc_d_poly(poly p, double x) //возвращает значение пр
         sum+=xn*p.C[i+1]*(i+2);
         xn*=x;
     }
-   return sum;
+    return sum;
 }
 
 float calc_d2_poly(poly p, double x) // значение второй производной
@@ -960,7 +987,7 @@ float calc_d2_poly(poly p, double x) // значение второй произ
         sum+=xn*p.C[i+1]*(i+2)*(i+3);
         xn*=x;
     }
-   return sum;
+    return sum;
 }
 
 double solve_poly(poly p,double _x0, double rhs,int itn)
@@ -968,9 +995,9 @@ double solve_poly(poly p,double _x0, double rhs,int itn)
     double x0,x,xn,eps;// вычисляемые приближения для корня
     double a, b,deltax;// границы отрезка и необходимая точность
 
-   // deltax=deltax0;
+    // deltax=deltax0;
     x=_x0;
-   /* a=x0-deltax;
+    /* a=x0-deltax;
     b=x0+deltax;
 
     int nn=0;
@@ -992,10 +1019,10 @@ double solve_poly(poly p,double _x0, double rhs,int itn)
 */
     for (int i=0; i<itn; ++i)
     {
-      x = x-calc_poly(p,rhs,x)/calc_d_poly(p,x); // считаем первое приближение
+        x = x-calc_poly(p,rhs,x)/calc_d_poly(p,x); // считаем первое приближение
     }
 
-       // printf("x = %lf f(x)=%e \n",x*1000.0,calc_poly(p,rhs,x));
+    // printf("x = %lf f(x)=%e \n",x*1000.0,calc_poly(p,rhs,x));
 
     return x;
 
@@ -1021,7 +1048,7 @@ int jacobi_polynomial(INPUT_PARAM par, poly pol,double** field,double **rhs, int
 
     static double rhs_[600][600]; //careful here :)
 
-//field_x*a+....+pol*fieldx^..=rhs
+    //field_x*a+....+pol*fieldx^..=rhs
 
     poly_new=pol;
     poly_new.C[0]+=a;
@@ -1032,7 +1059,7 @@ int jacobi_polynomial(INPUT_PARAM par, poly pol,double** field,double **rhs, int
 
     for (i=1; i<ncx-1; i+=30)
     {
-    printf("i=%d P=%e ey=%e \n",i,Py_[i][2],ey[i][2]);
+        printf("i=%d P=%e ey=%e \n",i,Py_[i][2],ey[i][2]);
     }
 
     for(n=0;n<itn;n++)
@@ -1090,11 +1117,11 @@ int jacobi_polynomial(INPUT_PARAM par, poly pol,double** field,double **rhs, int
                 field[i][j0]=field[i][j1-1];
             if (par.s_bc_type==5)//zero div
                 field[i][j0]=field[i+1][j0]-dx*rhs[i][j0];
-           // j=N_Y_DIEL-1;
-           // Py_[i][j]=Py_[i][j-1] -(Px_[i+1][j]-Px_[i][j])/(1.0*dx)*(1.0*dy);
+            // j=N_Y_DIEL-1;
+            // Py_[i][j]=Py_[i][j-1] -(Px_[i+1][j]-Px_[i][j])/(1.0*dx)*(1.0*dy);
             //Py_[i][j]=0.5*(Py_[i][j+1]+Py_[i][j-1]);
 
-          /* j=1;
+            /* j=1;
             Py_[i][j-1]=Py_[i][j+1] +(Px_[i+1][j]-Px_[i-1][j])/(2.0*dx)*(2.0*dy);
             Py_[i][j]=0.5*(Py_[i][j+1]+Py_[i][j-1]);*/
         }
@@ -1212,7 +1239,7 @@ void solve_landau(double d_t) //landau dipole theory in fixed external field
     p.C[4]=6.0*gam;
 
     x1=solve_poly(p,x1, rh,100);
-        printf("P_exact=%e E=%e poly=%e \n",x1,(E0-x1/EPS0),calc_poly(p,rh,x1));
+    printf("P_exact=%e E=%e poly=%e \n",x1,(E0-x1/EPS0),calc_poly(p,rh,x1));
 
 
 }

@@ -117,6 +117,8 @@ extern double **x, **y, **vx, **vy, **vz, *x_array, *y_array, **source, **eps_ar
       ***sp_vx0, ***sp_vy0, ***sp_vz0, ***sp_vt, **phi_intl,**Py_,**Py0_,**RHS_p;
 
 extern  double **sp_n_sm;
+extern int saveTime;
+extern int fileNumber;
 
 extern pzSolver* pz_solver;
 

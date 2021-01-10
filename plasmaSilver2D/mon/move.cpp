@@ -31,11 +31,14 @@ void move(int isp)
     x[isp][n] += vx[isp][n];
     y[isp][n] += vy[isp][n];
 
-    if(/*eps_array[i][j]/EPS0 > 1 &&*/ y[isp][n]< 2/*strc[1].yu*/)
+    if(x[isp][n]> 79)
     {
-       y[isp][n] = 2 /*+ rand() * 0.01 / RAND_MAX*/;//strc[1].yu;
-       vy[isp][n] = 0;
-
+       //y[isp][n] = 20 /*+ rand() * 0.01 / RAND_MAX*/;//strc[1].yu;
+       //vy[isp][n] = 0;
+        /*x[isp][n] = 79;
+        vx[isp][n] = 0;
+        y[isp][n] -= vy[isp][n];
+        vy[isp][n] =  0.0005 -  rand() * 0.001 / RAND_MAX;*/
        //x[isp][n] -= vx[isp][n];
        //vx[isp][n] =  0.0005 -  rand() * 0.001 / RAND_MAX;
     }

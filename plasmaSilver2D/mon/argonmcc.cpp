@@ -14,10 +14,9 @@ int ecolsp, icolsp;
 
 void mcc(int isp)
 {
-    static int init_mcc_flag=1;
-    static double ecol_extra, icol_extra;
-    static double max_sigmav_e, max_sigmav_i;
-    static double col_prob_e, col_prob_i;
+
+    static double _max_sigmav_e, _max_sigmav_i;
+    static double _col_prob_e, _col_prob_i;
 
     register int i, j, k, index;
     int N, nnp, s1, s2;
@@ -25,6 +24,12 @@ void mcc(int isp)
     double engy, rengy, phi1, delx, dely;
     double cosphi, sinphi, coschi, sinchi;
     double sum_sigma, temp, vneutx, vneuty, vneutz;
+
+
+    static int init_mcc_flag=1;
+    static double ecol_extra, icol_extra;
+    static double max_sigmav_e, max_sigmav_i;
+    static double col_prob_e, col_prob_i;
 
     if (init_mcc_flag) {
         gden = NperTORR*pressure/(gtemp+SNG_MIN);  /* Calculating the gas density */
@@ -62,6 +67,155 @@ void mcc(int isp)
         }
         init_mcc_flag = 0;
     }
+
+    /*****KOSTIL_START*******/
+    int sum_rand0=0;
+    int sum_rand1=0;
+    int sum_rand2=0;
+    int sum_rand3=0;
+    int sum_high=0;
+
+    if(ecollisional && isp==ecolsp) {
+        for(j=0; j< np[ecolsp]; j++) {
+            engy = Exscale[ecolsp]*vx[ecolsp][j]*vx[ecolsp][j];
+            engy+= Eyscale[ecolsp]*vy[ecolsp][j]*vy[ecolsp][j];
+            engy+= Ezscale[ecolsp]*vz[ecolsp][j]*vz[ecolsp][j];
+            if(engy>ionengy0) {
+                sum_high++;
+                max_sigmav_e=sqrt(2*1.602e-19*engy/m[ecolsp])
+                        *(sigma1(engy)+sigma2(engy)+sigma3(engy));
+
+                col_prob_e = 1 -exp(-max_sigmav_e*gden*dt*sp_k[ecolsp]);
+                if(frand() < col_prob_e) {
+                    sum_rand0++;
+                    vel  = sqrt(2.0*1.602e-19*engy/m[ecolsp]);
+                    sigma_total = max_sigmav_e/(vel + SNG_MIN);   /**djc**/
+                    random= frand();
+
+                    /*********************************************************************/
+                    /* determine the type of collision and calculate new velocities, etc */
+
+                    /*******************************/
+                    /* if the collision is elastic */
+
+                    if (random <= (sum_sigma = sigma1(engy))/sigma_total) {
+                        sum_rand1++;
+                        /* first normalize vel */
+                        vx[ecolsp][j] *= vxscale[ecolsp]/vel;
+                        vy[ecolsp][j] *= vyscale[ecolsp]/vel;
+                        vz[ecolsp][j] *= vzscale[ecolsp]/vel;
+
+                        /* scatter the electron */
+                        newvel(engy, vel, &vx[ecolsp][j], &vy[ecolsp][j], &vz[ecolsp][j], 1);
+
+                        /* normalize back to deminsionless vel */
+                        vx[ecolsp][j] /= vxscale[ecolsp];
+                        vy[ecolsp][j] /= vyscale[ecolsp];
+                        vz[ecolsp][j] /= vzscale[ecolsp];
+                    }
+                    /**********************************/
+                    /* if the collision is excitation */
+
+                    else if (engy >= extengy0 && random <= (sum_sigma +=sigma2(engy))/sigma_total) {
+                        sum_rand2++;
+                        /* first normalize vel */
+                        vx[ecolsp][j] *= vxscale[ecolsp]/vel;
+                        vy[ecolsp][j] *= vyscale[ecolsp]/vel;
+                        vz[ecolsp][j] *= vzscale[ecolsp]/vel;
+
+                        engy -= extengy0;
+                        vel   = sqrt(2.0*1.602e-19*engy/m[ecolsp]);
+
+                        /* scatter the electron */
+                        newvel(engy, vel, &vx[ecolsp][j], &vy[ecolsp][j], &vz[ecolsp][j], 0);
+
+                        /* normalize back to deminsionless vel */
+                        vx[ecolsp][j] /= vxscale[ecolsp];
+                        vy[ecolsp][j] /= vyscale[ecolsp];
+                        vz[ecolsp][j] /= vzscale[ecolsp];
+
+                    }
+                    /***************************************************************************/
+                    /* if the collision is ionization, add the released electron and ion first */
+
+                    else if(engy >= ionengy0 && random <= (sum_sigma +=sigma3(engy))/sigma_total) {
+                        sum_rand3++;
+                        /* first normalize vel */
+                        vx[ecolsp][j] *= vxscale[ecolsp]/vel;
+                        vy[ecolsp][j] *= vyscale[ecolsp]/vel;
+                        vz[ecolsp][j] *= vzscale[ecolsp]/vel;
+
+                        /********************************/
+                        /* subtract the ion. energy and */
+                        /* partition the remaining energy */
+
+                        engy -= ionengy0;
+                        rengy = 10.0*tan(frand()*atan(engy/20.0));
+                        engy -= rengy;
+
+                        /********************************/
+                        /* scatter the created electron */
+
+                        vel= sqrt(2.0*1.602e-19*rengy/m[ecolsp]);
+                        k  = np[ecolsp];
+                        vx[ecolsp][k] = vx[ecolsp][j];
+                        vy[ecolsp][k] = vy[ecolsp][j];
+                        vz[ecolsp][k] = vz[ecolsp][j];
+                        newvel(rengy, vel, &vx[ecolsp][k], &vy[ecolsp][k], &vz[ecolsp][k], 0);
+
+                        /* normalize back to deminsionless vel */
+                        vx[ecolsp][k] /= vxscale[ecolsp];
+                        vy[ecolsp][k] /= vyscale[ecolsp];
+                        vz[ecolsp][k] /= vzscale[ecolsp];
+
+                        x[ecolsp][k] = x[ecolsp][j];
+                        y[ecolsp][k] = y[ecolsp][j];
+
+                        /****************************************/
+                        /* assign velocities to the created ion */
+
+                        k = np[ionsp];
+                        maxwellv(&vx[ionsp][k], &vy[ionsp][k], &vz[ionsp][k], vgth, frand(), frand(), frand());
+                        vx[ionsp][k] /= vxscale[ionsp];
+                        vy[ionsp][k] /= vyscale[ionsp];
+                        vz[ionsp][k] /= vzscale[ionsp];
+
+                        x[ionsp][k] = x[ecolsp][j];
+                        y[ionsp][k] = y[ecolsp][j];
+
+                        /*****************************************/
+                        /* finally scatter the incident electron */
+
+                        vel= sqrt(2.0*1.602e-19*engy/m[ecolsp]);
+                        newvel(engy, vel, &vx[ecolsp][j], &vy[ecolsp][j], &vz[ecolsp][j], 0);
+
+                        /* normalize back to dimensionless vel */
+                        vx[ecolsp][j] /= vxscale[ecolsp];
+                        vy[ecolsp][j] /= vyscale[ecolsp];
+                        vz[ecolsp][j] /= vzscale[ecolsp];
+
+                        if(++np[ionsp] >maxnp[ionsp] || ++np[ecolsp] >maxnp[ecolsp]) {
+                            puts("ADJUST(Ionization): too many particles. MUST EXIT!");
+                            exit(1);
+                        }
+                        s1 = x[ecolsp][j];
+                        s2 = y[ecolsp][j];
+                        delx = x[ecolsp][j] -s1;
+                        dely = y[ecolsp][j] -s2;
+                        sp_n_mcc[ionsp][s1][s2]    += weight[ecolsp]*(1-delx)*(1-dely);
+                        sp_n_mcc[ionsp][s1+1][s2]  += weight[ecolsp]*delx*(1-dely);
+                        sp_n_mcc[ionsp][s1][s2+1]  += weight[ecolsp]*(1-delx)*dely;
+                        sp_n_mcc[ionsp][s1+1][s2+1]+= weight[ecolsp]*delx*dely;
+
+                    }
+                }
+            }
+        }
+    }
+    if(sum_high>0)
+      printf("sh=%d s0=%d s1=%d  s2=%d  s3=%d\n", sum_high, sum_rand0, sum_rand1, sum_rand2, sum_rand3);
+    /*****KOSTIL_END*******/
+
 
     /********************************/
     /* Electron collisions with Ar  */
@@ -110,7 +264,7 @@ void mcc(int isp)
             /*******************************/
             /* if the collision is elastic */
 
-            if (random <= (sum_sigma =sigma1(engy))/sigma_total) {
+            if (random <= (sum_sigma = sigma1(engy))/sigma_total) {
                 /* first normalize vel */
                 vx[ecolsp][j] *= vxscale[ecolsp]/vel;
                 vy[ecolsp][j] *= vyscale[ecolsp]/vel;

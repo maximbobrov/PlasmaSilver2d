@@ -146,6 +146,7 @@ void init_dadi_arrays(int x0_flag, int xl_flag, int y0_flag, int yl_flag)
     else if(xl_flag== NEUMANN) {
         x_end=ncx;
         for(j=1; j<ncy; j++) {
+            //printf("eps [%d] = %f  eps = %f  cond = %d\n", j, eps_array[ncx-1][j], eps_array[ncx-1][j-1],conductor[ncx][j]);
             a_xgeom[ncx][j] = conductor[ncx][j]*(eps_array[ncx-1][j]+eps_array[ncx-1][j-1])/dx/dx;
             c_xgeom[ncx][j] = 0.0;
             b_xgeom[ncx][j] = a_xgeom[ncx][j] +c_xgeom[ncx][j];
@@ -206,6 +207,17 @@ void init_dadi_arrays(int x0_flag, int xl_flag, int y0_flag, int yl_flag)
             c_ygeom[i][ncy] = 0.0;
             b_ygeom[i][ncy] = a_ygeom[i][ncy] +c_ygeom[i][ncy];
         }
+    }
+
+
+    if(x0_flag==NEUMANN && y0_flag== NEUMANN) {
+        a_xgeom[0][0] = 0.0;
+        c_xgeom[0][0] = conductor[0][0]*eps_array[0][0]/dx/dx;
+        b_xgeom[0][0] = a_xgeom[0][0] +c_xgeom[0][0];
+
+        a_ygeom[0][0] = 0.0;
+        c_ygeom[0][0] = conductor[0][0]*eps_array[0][0]/dy/dy;
+        b_ygeom[0][0] = a_ygeom[0][0] +c_ygeom[0][0];
     }
 
     if(x0_flag==NEUMANN && yl_flag== NEUMANN) {
@@ -487,7 +499,7 @@ void adi(double **uadi, double **s, double del_t, int bound_flag,
             r_x[i] = (dthi*uadi[i][j] +s[i][j])*conductor[i][j]
                     -( a_ygeom[i][j]*uadi[i][jm1]
                        -b_ygeom[i][j]*uadi[i][j]
-                       +c_ygeom[i][j]*uadi[i][jp1]) +  /*sin(t * 6.28e7) **/ dthi*phi_intl[i][j]*(1-bound_flag);
+                       +c_ygeom[i][j]*uadi[i][jp1]) +  /*sin(t * 6.28e7) **/ dthi*phi_intl[i][j]*(1-bound_flag) /* * (1 + 8*((sin(t*6.28/1e-6))))*/;
         }
 
         /* Solve tridiagonal system. */
@@ -520,7 +532,7 @@ void adi(double **uadi, double **s, double del_t, int bound_flag,
             r_y[j] = (dthi*ustar[i][j] +s[i][j])*conductor[i][j]
                     -( a_xgeom[i][j]*ustar[im1][j]
                        -b_xgeom[i][j]*ustar[i][j]
-                       +c_xgeom[i][j]*ustar[ip1][j]) + /*sin(t * 6.28e7) **/ dthi*phi_intl[i][j]*(1-bound_flag);
+                       +c_xgeom[i][j]*ustar[ip1][j]) + /*sin(t * 6.28e7) **/ dthi*phi_intl[i][j]*(1-bound_flag) /* * (1 + 8*((sin(t*6.28/1e-6))))*/;
         }
 
         /* Solve tridiagonal system. */

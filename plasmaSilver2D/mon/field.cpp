@@ -387,7 +387,7 @@ void init_fields()
       else if(j>lhs_nyf && j<lhs_nyf+lhs_gap)  phi_lhs[j]= (lhs_nyf+lhs_gap-j)/(double)(lhs_gap);
       else                                     phi_lhs[j]= 0.0;
     }
-    for (j=0; j<= ncy; j++) phi_rhs[j]= 0.0; 
+    for (j=0; j<= ncy; j++) phi_rhs[j]= 0.0;
     
     dadi_dt= dadi(dadi_dt, phi_lap_lhs, source, 60, 1e-3, 1, phi_lhs, phi_rhs, phi_dwn, phi_up);
 
