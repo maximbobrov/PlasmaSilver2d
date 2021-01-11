@@ -228,18 +228,18 @@ void GLWidget::paintGL()
     double scc = 0.01;//0.0002;
 
 
+    /*TWOD_One_2_One(sp_n_sm,   ncx, ncy);
     TWOD_One_2_One(sp_n_sm,   ncx, ncy);
     TWOD_One_2_One(sp_n_sm,   ncx, ncy);
     TWOD_One_2_One(sp_n_sm,   ncx, ncy);
     TWOD_One_2_One(sp_n_sm,   ncx, ncy);
     TWOD_One_2_One(sp_n_sm,   ncx, ncy);
     TWOD_One_2_One(sp_n_sm,   ncx, ncy);
-    TWOD_One_2_One(sp_n_sm,   ncx, ncy);
-    TWOD_One_2_One(sp_n_sm,   ncx, ncy);
+    TWOD_One_2_One(sp_n_sm,   ncx, ncy);*/
 
 
 
-    double sizeScale = 2.5;
+    double sizeScale = 55.5;
 
     for (int i=0;i<ncx-1;i+=1)
     {
@@ -268,7 +268,7 @@ void GLWidget::paintGL()
     }*/
 
 
-   scc = 0.0000002;
+    scc = 0.0000002;
     /*for (int i=0;i<ncx-1;i+=1)
     {
         glBegin(GL_TRIANGLE_STRIP);
@@ -296,7 +296,7 @@ void GLWidget::paintGL()
     }*/
 
 
-   /* glBegin(GL_TRIANGLE_STRIP);
+    /* glBegin(GL_TRIANGLE_STRIP);
     for (int i=0;i<pz_solver->m_p_num;i++)
     {
         glColor3f(sc * pz_solver->m_p[i].p/0.26,-sc * pz_solver->m_p[i].p/0.26,0);
@@ -307,18 +307,18 @@ void GLWidget::paintGL()
 
 
 
-    glBegin(GL_POINTS);
-     for (int i=0;i<np[1];i+=1)
-       {
+   /* glBegin(GL_POINTS);
+    for (int i=0;i<np[1];i+=1)
+    {
         // printf("x=%e y=%e vx=%e vy=%e \n",x[0][i]*dx,y[0][i],vx[0][i],vy[0][i]);
-double v2=vx[1][i]*vx[1][i]+vy[1][i]*vy[1][i];
-//printf("v2=%e \n",v2);
-           glColor3f(0,0,1.0);
-         glVertex3f(sizeScale*monte::x[1][i]*monte::dx  - dx * N_X/2 ,
-                       sizeScale*monte::y[1][i]*monte::dy  -  dy *N_Y/2,
-                      0 );
-       }
-    glEnd();
+        double v2=vx[1][i]*vx[1][i]+vy[1][i]*vy[1][i];
+        //printf("v2=%e \n",v2);
+        glColor3f(0,0,1.0);
+        glVertex3f(sizeScale*monte::x[1][i]*monte::dx  - dx * N_X/2 ,
+                sizeScale*monte::y[1][i]*monte::dy  -  dy *N_Y/2,
+                0 );
+    }
+    glEnd();*/
 
     glBegin(GL_POINTS);
     for (int i=0;i<np[0];i+=1)
@@ -332,7 +332,7 @@ double v2=vx[1][i]*vx[1][i]+vy[1][i]*vy[1][i];
                 0 );
     }
     glEnd();
-      /* scc = 0.5e-6;
+    /* scc = 0.5e-6;
      glBegin(GL_LINES);
      for (int i=0;i<ncx-1;i+=1)
          {
@@ -344,34 +344,40 @@ double v2=vx[1][i]*vx[1][i]+vy[1][i]*vy[1][i];
      glEnd();*/
 
 
-     scc = 0.3e-5;
-   glBegin(GL_LINES);
-   for (int i=0;i<ncx-1;i+=1)
-       {
-       glColor3f(0,0,1);
-       glVertex3f(sizeScale*monte::dx * i  - dx * N_X/2 , scc*sc *phi[i][2] + sizeScale*monte::dy * 20  -  dy *N_Y/2, 0);
-       //glColor3f(sc * scc*phi[i][j],-sc *scc*phi[i][j],0);
-       //glVertex3f(sizeScale*monte::dx * i  - dx * N_X/2 , sizeScale*monte::dy * j  -  dy *N_Y/2, 0);
-   }
-   glEnd();
+    /*scc = 0.5e-4;
+    glBegin(GL_LINES);
+    for (int i=0;i<ncx-1;i+=1)
+    {
+        glColor3f(0,0,1);
+        glVertex3f(sizeScale*monte::dx * i  - dx * N_X/2 , scc*sc *phi[i][2] + sizeScale*monte::dy * 20  -  dy *N_Y/2, 0);
+        //glColor3f(sc * scc*phi[i][j],-sc *scc*phi[i][j],0);
+        //glVertex3f(sizeScale*monte::dx * i  - dx * N_X/2 , sizeScale*monte::dy * j  -  dy *N_Y/2, 0);
+    }
+    glEnd();
 
-     scc = 1e-4;
-   glBegin(GL_LINES);
-   for (int i=0;i<ncx-1;i+=1)
-       {
-       glColor3f(1,0,0);
-       glVertex3f(sizeScale*monte::dx * i  - dx * N_X/2 , scc*sc *sp_n[0][i][2] + sizeScale*monte::dy * 10  -  dy *N_Y/2, 0);
-       //glColor3f(sc * scc*phi[i][j],-sc *scc*phi[i][j],0);
-       //glVertex3f(sizeScale*monte::dx * i  - dx * N_X/2 , sizeScale*monte::dy * j  -  dy *N_Y/2, 0);
-   }
-   glEnd();
+    scc = 3e-6;
+    glBegin(GL_LINE_STRIP);
+    for (int i=0;i<ncx-1;i+=1)
+    {
+        glColor3f(1,0,0);
+        glVertex3f(sizeScale*monte::dx * i  - dx * N_X/2 , scc*sc *sp_n[0][i][2] + sizeScale*monte::dy * 10  -  dy *N_Y/2, 0);
+        //glColor3f(sc * scc*phi[i][j],-sc *scc*phi[i][j],0);
+        //glVertex3f(sizeScale*monte::dx * i  - dx * N_X/2 , sizeScale*monte::dy * j  -  dy *N_Y/2, 0);
+    }
+    glEnd();
+
+    glBegin(GL_LINE_STRIP);
+    for (int i=0;i<ncx-1;i+=1)
+    {
+        glColor3f(0,1,0);
+        glVertex3f(sizeScale*monte::dx * i  - dx * N_X/2 , scc*sc *sp_n[1][i][2] + sizeScale*monte::dy * 10  -  dy *N_Y/2, 0);
+        //glColor3f(sc * scc*phi[i][j],-sc *scc*phi[i][j],0);
+        //glVertex3f(sizeScale*monte::dx * i  - dx * N_X/2 , sizeScale*monte::dy * j  -  dy *N_Y/2, 0);
+    }
+    glEnd();*/
     /**********Monte**********/
 
-
-
     glDisable(GL_DEPTH_TEST);
-
-
 }
 
 void GLWidget::resizeGL(int w, int h)

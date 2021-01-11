@@ -445,6 +445,7 @@ void MainWindow::simulateData(bool status)
     {
         for (int i=0;i<10;i++)
             monte::solve_mcm();
+        printf("t=%e\n",monte::t);
         /*m_time += m_textStartTime->text().toDouble() + saveNum * m_textDeltaTime->text().toDouble();
         updateData(saveNum);
 

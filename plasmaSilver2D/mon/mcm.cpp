@@ -884,8 +884,8 @@ void solve_mcm()
 
     t += dt;
     saveTime++;
-    if(frand()>0.95)
-      printf("t=%e\n",t);
+    //if(frand()>0.95)
+    //  printf("t=%e\n",t);
     for(isp=0; isp<nsp; isp++) {
         if(!(k_count[isp]%sp_k[isp])) {
             it[isp]++;
