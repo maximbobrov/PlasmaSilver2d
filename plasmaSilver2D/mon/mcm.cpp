@@ -33,7 +33,7 @@ double **x, **y, **vx, **vy, **vz, *x_array, *y_array, **source, **eps_array, **
 **phi, **phi_lap_lhs, **phi_lap_rhs, **phi_pois, **phi_ave, **phi_ave_show,
 ***sp_n, ***sp_n_0, ***sp_n_k, ***sp_n_mcc, ***sp_n_ave, ***sp_n_ave_show,
 **rho, **ex, **ey, **ax, **ay, ***sp_ex, ***sp_ey, **sigma, ***sp_sigma,
-***sp_vx0, ***sp_vy0, ***sp_vz0, ***sp_vt, **phi_intl,**Py_,**Py0_,**RHS_p;
+***sp_vx0, ***sp_vy0, ***sp_vz0, ***sp_vt, **phi_intl,**Py_,**Py0_,**RHS_p,*extra_e;
 
 double **sp_n_sm;
 int saveTime=0;
@@ -165,6 +165,12 @@ void species(int isp)
     }
 
     /* Allocate particle arrays */
+    if (isp==0)
+    {extra_e = (double *)malloc(maxnp[isp]*sizeof(double));
+        for (int i=0;i<maxnp[isp];i++)
+        {extra_e[i]=0.0;}
+    }
+
     x[isp] = (double *)malloc(maxnp[isp]*sizeof(double));
     y[isp] = (double *)malloc(maxnp[isp]*sizeof(double));
     vx[isp]= (double *)malloc(maxnp[isp]*sizeof(double));
@@ -210,7 +216,7 @@ void start()
     /***********************************************/
     /* Open files and read in "general" parameters */
 
-
+    makethefile();
     InputDeck = fopen("argon.inp", "r");
 
     /*********************/
@@ -446,6 +452,7 @@ void start()
     Py0_=(double **)malloc(ngx*sizeof(double *));
     RHS_p=(double **)malloc(ngx*sizeof(double *));
 
+
     for(i=0; i<=ncx; i++) {
         rho[i]     = (double *)malloc(ngy*sizeof(double));
         source[i]  = (double *)malloc(ngy*sizeof(double));
@@ -461,6 +468,7 @@ void start()
         Py_[i]=(double *)malloc(ngy*sizeof(double));
         Py0_[i]=(double *)malloc(ngy*sizeof(double));
         RHS_p[i]=(double *)malloc(ngy*sizeof(double));
+
         for(j=0; j<=ncy; j++) {
             phi[i][j] = phi_pois[i][j]= phi_intl[i][j]= sigma[i][j] = 0.0;
             eps_array[i][j]= 1.0;
@@ -884,8 +892,8 @@ void solve_mcm()
 
     t += dt;
     saveTime++;
-    //if(frand()>0.95)
-    //  printf("t=%e\n",t);
+    if(frand()>0.95)
+        printf("t=%e\n",t);
     for(isp=0; isp<nsp; isp++) {
         if(!(k_count[isp]%sp_k[isp])) {
             it[isp]++;
@@ -893,6 +901,7 @@ void solve_mcm()
             boundary(isp);
             if(wall_flag) wall_diagnos(isp);
             mcc(isp);
+            diagnos();
             gather(isp);
             k_count[isp]=0;
         }
